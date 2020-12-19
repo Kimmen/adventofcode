@@ -4,6 +4,6 @@ open System
 
 [<EntryPoint>]
 let main argv =
-    let result = day13_2.run
+    let result = day14_1.run
     printfn "The result of : %O" result
     0 // return an integer exit code

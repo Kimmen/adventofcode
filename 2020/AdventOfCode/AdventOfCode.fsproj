@@ -31,7 +31,15 @@
     <Compile Include="day12-2.fs" />
     <Compile Include="day13-1.fs" />
     <Compile Include="day13-2.fs" />
+    <Compile Include="day14-1.fs" />
+    <Compile Include="day14-2.fs" />
     <Compile Include="Program.fs" />
+    <Content Include="input14.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="input14test.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="input13.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
