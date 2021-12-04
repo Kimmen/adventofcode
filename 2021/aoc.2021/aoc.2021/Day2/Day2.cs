@@ -1,12 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Aoc.Day1;
+namespace Aoc.Day2;
 
 public class Day2
 {
