@@ -26,16 +26,10 @@
     </ItemGroup>
 
     <ItemGroup>
-      <None Remove="Day1\input.1.txt" />
-      <None Remove="Day2\input.1.txt" />
-      <None Remove="Day2\input.dev.txt" />
-      <None Remove="Day3\input.1.txt" />
-      <None Remove="Day3\input.dev.txt" />
-      <None Remove="Day5\input.dev.txt" />
-      <None Remove="Day5\input.txt" />
-      <EmbeddedResource Include="Day1\input.1.txt" />
-      <None Remove="Day1\input.dev.txt" />
-      <EmbeddedResource Include="Day1\input.dev.1.txt" />
+      <EmbeddedResource Include="Day2\input.txt" />
+      <EmbeddedResource Include="Day2\input.dev.txt" />
+      <EmbeddedResource Include="Day1\input.txt" />
+      <EmbeddedResource Include="Day1\input.dev.txt" />
     </ItemGroup>
 
 </Project>
