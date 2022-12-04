@@ -17,23 +17,14 @@ public partial class Puzzle
         _output = output;
     }
 
-    private int DetermineContainedSections(string inputFile)
+    private int DetermineContainedSections(string inputFile, Func<(Range First, Range Second), bool> sectionsPredicate)
     {
         var numberOfContainedPairs = Helpers.ReadLinesFromResource(inputFile)
             .Select(ExtractSections)
-            .Where(HasContainedSections)
+            .Where(sectionsPredicate)
             .Count();
 
         return numberOfContainedPairs;
-    }
-
-    private bool HasContainedSections((Range First, Range Second) sectionPair)
-    {
-        var (first, second) = sectionPair;
-
-        //_output.WriteLine($"{first.Contains(second)} , {second.Contains(first)}");
-
-        return first.Contains(second) || second.Contains(first);
     }
 
     private (Range First, Range Second) ExtractSections(string sectionPairDefinition)
@@ -52,21 +43,34 @@ public partial class Puzzle
         var firstRange = GenerateRangeFromMatch(matches.First());
         var seconRange = GenerateRangeFromMatch(matches.Last());
 
-        //_output.WriteLine($"{firstRange}, {seconRange}");
         return (firstRange, seconRange);
+    }
+
+    private bool HasContainedSections((Range First, Range Second) sectionPair)
+    {
+        var (first, second) = sectionPair;
+
+        return first.Contains(second) || second.Contains(first);
+    }
+
+    private bool HasOverlapedSections((Range First, Range Second) sectionPair)
+    {
+        var (first, second) = sectionPair;
+
+        return first.Overlaps(second);
     }
 
     [Fact]
     public void Part1Dev()
     {
-        var containedPairsCount = DetermineContainedSections("Aoc.Day4.input.dev.txt");
+        var containedPairsCount = DetermineContainedSections("Aoc.Day4.input.dev.txt", HasContainedSections);
         Assert.StrictEqual(2, containedPairsCount);
     }
 
     [Fact]
     public void Part1()
     {
-        var containedPairsCount = DetermineContainedSections("Aoc.Day4.input.txt");
+        var containedPairsCount = DetermineContainedSections("Aoc.Day4.input.txt", HasContainedSections);
         Assert.StrictEqual(431, containedPairsCount);
         _output.WriteLine($"Contained pairs: {containedPairsCount}");
     }
@@ -74,16 +78,16 @@ public partial class Puzzle
     [Fact]
     public void Part2Dev()
     {
-        var containedPairsCount = DetermineContainedSections("Aoc.Day4.input.dev.txt");
-        Assert.StrictEqual(70, containedPairsCount);
+        var containedPairsCount = DetermineContainedSections("Aoc.Day4.input.dev.txt", HasOverlapedSections);
+        Assert.StrictEqual(4, containedPairsCount);
     }
 
     [Fact]
     public void Part2()
     {
-        var containedPairsCount = DetermineContainedSections("Aoc.Day4.input.txt");
-        Assert.StrictEqual(2738, containedPairsCount);
-        _output.WriteLine($"Priority sum: {containedPairsCount}");
+        var containedPairsCount = DetermineContainedSections("Aoc.Day4.input.txt", HasOverlapedSections);
+        Assert.StrictEqual(823, containedPairsCount);
+        _output.WriteLine($"Contained pairs: {containedPairsCount}");
     }
 
     [GeneratedRegex("(?'Start'\\d{1,2})-(?'End'\\d{1,2})", RegexOptions.Compiled)]
