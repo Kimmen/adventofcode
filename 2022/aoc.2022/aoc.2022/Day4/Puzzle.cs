@@ -10,6 +10,8 @@ namespace Aoc.Day4;
 public partial class Puzzle
 {
     private readonly ITestOutputHelper _output;
+    [GeneratedRegex("(?'Start'\\d{1,2})-(?'End'\\d{1,2})", RegexOptions.Compiled)]
+    private static partial Regex SectionExtractorRegex();
     private static readonly Regex SectionExtractor = SectionExtractorRegex();
    
     public Puzzle(ITestOutputHelper output)
@@ -17,7 +19,7 @@ public partial class Puzzle
         _output = output;
     }
 
-    private int DetermineContainedSections(string inputFile, Func<(Range First, Range Second), bool> sectionsPredicate)
+    private int CountSections(string inputFile, Func<(Range First, Range Second), bool> sectionsPredicate)
     {
         var numberOfContainedPairs = Helpers.ReadLinesFromResource(inputFile)
             .Select(ExtractSections)
@@ -63,14 +65,14 @@ public partial class Puzzle
     [Fact]
     public void Part1Dev()
     {
-        var containedPairsCount = DetermineContainedSections("Aoc.Day4.input.dev.txt", HasContainedSections);
+        var containedPairsCount = CountSections("Aoc.Day4.input.dev.txt", HasContainedSections);
         Assert.StrictEqual(2, containedPairsCount);
     }
 
     [Fact]
     public void Part1()
     {
-        var containedPairsCount = DetermineContainedSections("Aoc.Day4.input.txt", HasContainedSections);
+        var containedPairsCount = CountSections("Aoc.Day4.input.txt", HasContainedSections);
         Assert.StrictEqual(431, containedPairsCount);
         _output.WriteLine($"Contained pairs: {containedPairsCount}");
     }
@@ -78,18 +80,15 @@ public partial class Puzzle
     [Fact]
     public void Part2Dev()
     {
-        var containedPairsCount = DetermineContainedSections("Aoc.Day4.input.dev.txt", HasOverlapedSections);
-        Assert.StrictEqual(4, containedPairsCount);
+        var overlappedPairsCount = CountSections("Aoc.Day4.input.dev.txt", HasOverlapedSections);
+        Assert.StrictEqual(4, overlappedPairsCount);
     }
 
     [Fact]
     public void Part2()
     {
-        var containedPairsCount = DetermineContainedSections("Aoc.Day4.input.txt", HasOverlapedSections);
-        Assert.StrictEqual(823, containedPairsCount);
-        _output.WriteLine($"Contained pairs: {containedPairsCount}");
+        var overlappedPairsCount = CountSections("Aoc.Day4.input.txt", HasOverlapedSections);
+        Assert.StrictEqual(823, overlappedPairsCount);
+        _output.WriteLine($"Contained pairs: {overlappedPairsCount}");
     }
-
-    [GeneratedRegex("(?'Start'\\d{1,2})-(?'End'\\d{1,2})", RegexOptions.Compiled)]
-    private static partial Regex SectionExtractorRegex();
 }
