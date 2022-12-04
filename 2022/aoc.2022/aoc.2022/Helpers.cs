@@ -54,4 +54,9 @@ public static class Helpers
         binary.CopyTo(result, 0);
         return result[0];
     }
+
+    public static bool Contains(this Range range, Range other)
+    {
+        return range.Start.Value <= other.Start.Value && range.End.Value >= other.End.Value;
+    }
 }
