@@ -52,14 +52,14 @@ public class Puzzle
     [Fact]
     public void Part1Dev()
     {
-        var result = GetTopFromEachStack("Aoc.Day5.input.dev.txt", new SingleCrateMover());
+        var result = GetTopFromEachStack("Aoc.Day5.input.dev.txt", new OneAtATimeCrateMover());
         Assert.Equal("CMZ", result);
     }
 
     [Fact]
     public void Part1()
     {
-        var result = GetTopFromEachStack("Aoc.Day5.input.txt", new SingleCrateMover());
+        var result = GetTopFromEachStack("Aoc.Day5.input.txt", new OneAtATimeCrateMover());
         Assert.Equal("TBVFVDZPN", result);
         _output.WriteLine($"Top: {result}");
     }
@@ -67,14 +67,14 @@ public class Puzzle
     [Fact]
     public void Part2Dev()
     {
-        var result = GetTopFromEachStack("Aoc.Day5.input.dev.txt", new MultipleCrateMover());
+        var result = GetTopFromEachStack("Aoc.Day5.input.dev.txt", new AllAtOnceCrateMover());
         Assert.Equal("MCD", result);
     }
 
     [Fact]
     public void Part2()
     {
-        var result = GetTopFromEachStack("Aoc.Day5.input.txt", new MultipleCrateMover());
+        var result = GetTopFromEachStack("Aoc.Day5.input.txt", new AllAtOnceCrateMover());
         Assert.Equal("VLCWHTDSZ", result);
         _output.WriteLine($"Top: {result}");
     }

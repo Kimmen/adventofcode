@@ -9,7 +9,7 @@ public interface ICrateMover
     void Move(List<Stack<string>> stacks, MoveInstruction instruction);
 }
 
-public class SingleCrateMover : ICrateMover
+public class OneAtATimeCrateMover : ICrateMover
 {
     public void Move(List<Stack<string>> stacks, MoveInstruction instruction)
     {
@@ -21,7 +21,7 @@ public class SingleCrateMover : ICrateMover
     }
 }
 
-public class MultipleCrateMover : ICrateMover
+public class AllAtOnceCrateMover : ICrateMover
 {
     public void Move(List<Stack<string>> stacks, MoveInstruction instruction)
     {
