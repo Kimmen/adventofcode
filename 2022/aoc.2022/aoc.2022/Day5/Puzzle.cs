@@ -19,13 +19,13 @@ public class Puzzle
         _output = output;
     }
 
-    public string GetTopFromEachStack(string input)
+    public string GetTopFromEachStack(string input, ICrateMover crateMover)
     {
-        var rows = Helpers.ReadLinesFromResource(input).ToList();
-        var stacks = ReadStacks(rows);
+        var rows = InputReader.ReadLinesFromResource(input).ToList();
+        var stacks = BuildCrateCollection(rows, crateMover);
         var instructions = ReadInstructions(rows);
 
-        foreach ( var instruction in instructions) 
+        foreach (var instruction in instructions) 
         {
             stacks.Move(instruction);
         }
@@ -33,9 +33,9 @@ public class Puzzle
         return stacks.PeekAll();
     }
 
-    private CrateStackCollection ReadStacks(List<string> rows)
+    private CrateCollection BuildCrateCollection(List<string> rows, ICrateMover crateMover)
     {
-        return CrateStackCollection.Parse(rows);
+        return CrateCollection.Parse(rows, crateMover);
     }
 
     private IEnumerable<MoveInstruction> ReadInstructions(List<string> rows)
@@ -52,14 +52,14 @@ public class Puzzle
     [Fact]
     public void Part1Dev()
     {
-        var result = GetTopFromEachStack("Aoc.Day5.input.dev.txt");
+        var result = GetTopFromEachStack("Aoc.Day5.input.dev.txt", new SingleCrateMover());
         Assert.Equal("CMZ", result);
     }
 
     [Fact]
     public void Part1()
     {
-        var result = GetTopFromEachStack("Aoc.Day5.input.txt");
+        var result = GetTopFromEachStack("Aoc.Day5.input.txt", new SingleCrateMover());
         Assert.Equal("TBVFVDZPN", result);
         _output.WriteLine($"Top: {result}");
     }
@@ -67,15 +67,15 @@ public class Puzzle
     [Fact]
     public void Part2Dev()
     {
-        var result = GetTopFromEachStack("Aoc.Day5.input.dev.txt");
-        Assert.Equal("CMZ", result);
+        var result = GetTopFromEachStack("Aoc.Day5.input.dev.txt", new MultipleCrateMover());
+        Assert.Equal("MCD", result);
     }
 
     [Fact]
     public void Part2()
     {
-        var result = GetTopFromEachStack("Aoc.Day5.input.txt");
-        Assert.Equal("CMZ", result);
-        _output.WriteLine($"Contained pairs: {result}");
+        var result = GetTopFromEachStack("Aoc.Day5.input.txt", new MultipleCrateMover());
+        Assert.Equal("VLCWHTDSZ", result);
+        _output.WriteLine($"Top: {result}");
     }
 }

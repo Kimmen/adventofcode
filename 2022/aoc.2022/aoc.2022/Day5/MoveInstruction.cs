@@ -3,7 +3,7 @@ using System.Text.RegularExpressions;
 
 namespace Aoc.Day5
 {
-    internal partial class MoveInstruction
+    public partial class MoveInstruction
     {
         private static readonly Regex InputRegex = InputRegexBuilder();
 
@@ -18,7 +18,7 @@ namespace Aoc.Day5
         public int FromStack { get; }
         public int ToStack { get; }
 
-        internal static MoveInstruction Parse(string moveInput)
+        public static MoveInstruction Parse(string moveInput)
         {
             var match = InputRegex.Match(moveInput);
             if(!match.Success)

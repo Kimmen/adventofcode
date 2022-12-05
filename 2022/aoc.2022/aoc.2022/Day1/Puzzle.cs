@@ -16,7 +16,7 @@ public class Puzzle
 
     private static long CalculateTotalCalories(string inputName, int includeTopCount)
     {
-        var caloriesPerInventory = Helpers.ReadLinesFromResource(inputName)
+        var caloriesPerInventory = InputReader.ReadLinesFromResource(inputName)
             .ChunkBy(string.IsNullOrWhiteSpace);
 
         var totalCalories = caloriesPerInventory

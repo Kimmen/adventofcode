@@ -27,7 +27,7 @@ public class Puzzle
 
     private static int CalculateTotalScore(string inputName, Func<Shape, string, Shape> yourShapeEvaluator)
     {
-        var totalScore = Helpers.ReadLinesFromResource(inputName)
+        var totalScore = InputReader.ReadLinesFromResource(inputName)
             .Select(x => x.Split(' '))
             .Select(x => (Opponent: GetShapeFromOpponent(x[0]), Your: yourShapeEvaluator(GetShapeFromOpponent(x[0]), x[1])))
             .Select(x => CalculateShapeScore(x.Your) + CalculateRoundScore(x.Opponent, x.Your))

@@ -21,7 +21,7 @@ public class Puzzle
 
     private int CalculateSharedItemPrioritySum(string inputName, Func<IEnumerable<Items>, IEnumerable<Items[]>> rucksackChunker)
     {
-        var rucksacks = Helpers.ReadLinesFromResource(inputName);
+        var rucksacks = InputReader.ReadLinesFromResource(inputName);
         var prioritySum = rucksackChunker(rucksacks)
             .Select(GetSharedItemType)
             .Select(DeterminePriority)

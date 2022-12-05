@@ -1,28 +1,28 @@
-﻿using System;
+﻿using Aoc.Day5;
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace Aoc.Day5
 {
-    internal class CrateStackCollection
+    public class CrateCollection
     {
         private List<Stack<string>> _stacks;
+        private ICrateMover _mover;
 
-        private CrateStackCollection(int stackCount)
+        private CrateCollection(int stackCount, ICrateMover mover)
         {
             _stacks = Enumerable
                 .Range(1, stackCount)
                 .Select(x => new Stack<string>())
                 .ToList();
+            _mover = mover;
         }
 
         public void Move(MoveInstruction instruction)
         {
-            for (int i = 0; i < instruction.MoveCount; i++)
-            {
-                var crate = _stacks[instruction.FromStack].Pop();
-                _stacks[instruction.ToStack].Push(crate);
-            }
+            _mover.Move(_stacks, instruction);
         }
 
         public string PeekAll()
@@ -32,7 +32,7 @@ namespace Aoc.Day5
                 .Aggregate(string.Empty, (acc, next) => $"{acc}{next}");
         }
 
-        public static CrateStackCollection Parse(IList<string> input)
+        public static CrateCollection Parse(IList<string> input, ICrateMover crateMover)
         {
             var stackInput = input
                 .TakeWhile(x => !string.IsNullOrWhiteSpace(x))
@@ -41,7 +41,7 @@ namespace Aoc.Day5
 
             var stackConfig = stackInput.First();
             var stackCount = GetStackCount(stackConfig);
-            var collection = new CrateStackCollection(stackCount);
+            var collection = new CrateCollection(stackCount, crateMover);
 
             foreach (var level in stackInput.Skip(1))
             {
@@ -81,3 +81,4 @@ namespace Aoc.Day5
         }
     }
 }
+

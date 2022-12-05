@@ -21,7 +21,7 @@ public partial class Puzzle
 
     private int CountSections(string inputFile, Func<(Range First, Range Second), bool> sectionsPredicate)
     {
-        var numberOfContainedPairs = Helpers.ReadLinesFromResource(inputFile)
+        var numberOfContainedPairs = InputReader.ReadLinesFromResource(inputFile)
             .Select(ExtractSections)
             .Where(sectionsPredicate)
             .Count();
