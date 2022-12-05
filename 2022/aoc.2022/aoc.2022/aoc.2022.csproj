@@ -41,6 +41,8 @@
       <EmbeddedResource Include="Day2\input.dev.txt" />
       <EmbeddedResource Include="Day1\input.txt" />
       <EmbeddedResource Include="Day1\input.dev.txt" />
+      <EmbeddedResource Include="Day5\input.dev.txt" />
+      <EmbeddedResource Include="Day5\input.txt" />
     </ItemGroup>
 
 </Project>
