@@ -19,23 +19,16 @@ public class Puzzle
         _output = output;
     }
     
-    private int GetTotalSizeOfDirectoriesExceeding(string input, int limitSize)
+    private int GetTotalSizeOfDirectoriesExceeding(string input, Func<Directory, int> calculateDirectories)
     {
-        var directory = DirectoryBuilder.Build(InputReader.ReadLinesFromResource(input));
-        var totalSize =  MatchDirectories(directory, x => x.Size <= limitSize)
-                .Select(x => x.Size)
-                .Sum();
-
-        return totalSize;
+        var root = DirectoryBuilder.Build(InputReader.ReadLinesFromResource(input));
+        return calculateDirectories(root);
     }
-
-    private IEnumerable<Directory> MatchDirectories(Directory directory, Func<Directory, bool> match)
+    
+    private static IEnumerable<Directory> GetDirectories(Directory directory)
     {
-        if (match(directory))
-        {
-            yield return directory;
-        }
-
+        yield return directory;
+      
         foreach (var child in directory.Children)
         {
             if (child is not Directory d)
@@ -43,7 +36,7 @@ public class Puzzle
                 continue;
             }
             
-            var matchingChildren = MatchDirectories(d, match);
+            var matchingChildren = GetDirectories(d);
 
             foreach (var matchingChild in matchingChildren)
             {
@@ -52,33 +45,55 @@ public class Puzzle
         }
     }
 
+    private static int CalculateTotalSizeOfMinimalDirs(Directory root)
+    {
+        var directories = GetDirectories(root);
+        return directories
+            .Select(x => x.Size)
+            .Where(x => x <= 100000)
+            .Sum();
+    }
+    
+    private static int CalculateClosestDeletableDirectory(Directory root)
+    {
+        int unusedSpace = 70_000_000 - root.Size;
+        
+        var firstDirSizeForUpgrade = GetDirectories(root)
+            .Select(x => x.Size)
+            .Order()
+            .SkipWhile(x => unusedSpace + x <= 30000000)
+            .FirstOrDefault();
+
+        return firstDirSizeForUpgrade;
+    }
+
     [Fact]
     public void Part1Dev()
     {
-        var result = GetTotalSizeOfDirectoriesExceeding("Aoc.Day7.input.dev.txt", 100000);
+        var result = GetTotalSizeOfDirectoriesExceeding("Aoc.Day7.input.dev.txt", CalculateTotalSizeOfMinimalDirs);
         Assert.Equal(95437, result);
     }
     
     [Fact]
     public void Part1()
     {
-        var result = GetTotalSizeOfDirectoriesExceeding("Aoc.Day7.input.txt", 100000);
+        var result = GetTotalSizeOfDirectoriesExceeding("Aoc.Day7.input.txt", CalculateTotalSizeOfMinimalDirs);
         Assert.Equal(1325919, result);
         _output.WriteLine($"Size: {result}");
     }
-    //
-    // [Fact]
-    // public void Part2Dev()
-    // {
-    //     var result = GetTopFromEachStack("Aoc.Day5.input.dev.txt", new AllAtOnceCrateMover());
-    //     Assert.Equal("MCD", result);
-    // }
-    //
-    // [Fact]
-    // public void Part2()
-    // {
-    //     var result = GetTopFromEachStack("Aoc.Day5.input.txt", new AllAtOnceCrateMover());
-    //     Assert.Equal("VLCWHTDSZ", result);
-    //     _output.WriteLine($"Top: {result}");
-    // }
+    
+    [Fact]
+    public void Part2Dev()
+    {
+        var result = GetTotalSizeOfDirectoriesExceeding("Aoc.Day7.input.dev.txt", CalculateClosestDeletableDirectory);
+        Assert.Equal(24933642, result);
+    }
+    
+    [Fact]
+    public void Part2()
+    {
+        var result = GetTotalSizeOfDirectoriesExceeding("Aoc.Day7.input.txt", CalculateClosestDeletableDirectory);
+        Assert.Equal(2050735, result);
+        _output.WriteLine($"Top: {result}");
+    }
 }
