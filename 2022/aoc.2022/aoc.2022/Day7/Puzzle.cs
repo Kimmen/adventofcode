@@ -25,29 +25,9 @@ public class Puzzle
         return calculateDirectories(root);
     }
     
-    private static IEnumerable<Directory> GetDirectories(Directory directory)
-    {
-        yield return directory;
-      
-        foreach (var child in directory.Children)
-        {
-            if (child is not Directory d)
-            {
-                continue;
-            }
-            
-            var matchingChildren = GetDirectories(d);
-
-            foreach (var matchingChild in matchingChildren)
-            {
-                yield return matchingChild;
-            }
-        }
-    }
-
     private static int CalculateTotalSizeOfMinimalDirs(Directory root)
     {
-        var directories = GetDirectories(root);
+        var directories = root.FlattenDirectories();
         return directories
             .Select(x => x.Size)
             .Where(x => x <= 100000)
@@ -58,7 +38,7 @@ public class Puzzle
     {
         int unusedSpace = 70_000_000 - root.Size;
         
-        var firstDirSizeForUpgrade = GetDirectories(root)
+        var firstDirSizeForUpgrade = root.FlattenDirectories()
             .Select(x => x.Size)
             .Order()
             .SkipWhile(x => unusedSpace + x <= 30000000)

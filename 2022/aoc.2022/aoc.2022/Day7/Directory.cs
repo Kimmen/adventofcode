@@ -16,6 +16,26 @@ public partial class Directory : INode
     public string Name { get; set; } = string.Empty;
     public int Size => Children.Sum(x => x.Size);
     public List<INode> Children { get; set; } = new();
+    
+    public IEnumerable<Directory> FlattenDirectories()
+    {
+        yield return this;
+      
+        foreach (var child in this.Children)
+        {
+            if (child is not Directory d)
+            {
+                continue;
+            }
+            
+            var matchingChildren = d.FlattenDirectories();
+
+            foreach (var matchingChild in matchingChildren)
+            {
+                yield return matchingChild;
+            }
+        }
+    }
 }
 
 public class File : INode
