@@ -18,7 +18,7 @@ public static class InputReader
 
         return reader.ReadToEnd();
     }
-    
+
     public static IEnumerable<string> GetLines(this string value)
     {
         return value.Split(Environment.NewLine);

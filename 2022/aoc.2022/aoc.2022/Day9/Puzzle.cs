@@ -1,57 +1,50 @@
 using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.Linq;
-using System.Runtime;
 
-using Newtonsoft.Json;
 using Xunit;
-using Xunit.Abstractions;
+
+using static Aoc.LoopUtilities;
 
 namespace Aoc.Day9;
 
 public class Puzzle
-{
-    private readonly ITestOutputHelper _output;
-
-    public Puzzle(ITestOutputHelper output)
-    {
-        _output = output;
-    }
-    
+{    
     private record struct Knot(int x, int y);
 
     private int GetTailPositionCount(string input, int ropeLength)
     {
-        var headActions = InputReader
-            .ReadLinesFromResource(input)
-            .ToArray();
+        var headMovements = InputReader.ReadLinesFromResource(input);
+
+        var rope = Enumerable
+            .Repeat(new Knot(0, 0), ropeLength)
+            .ToList();
 
         var visited = new HashSet<Knot>();
-        var rope = Enumerable.Repeat(new Knot(0, 0), ropeLength).ToList();
-
-        foreach (var action in headActions)
+        foreach (var movement in headMovements)
         {
-            var direction = action[0];
-            var steps = int.Parse(action[2..]);
+            var direction = movement[0];
+            var steps = int.Parse(movement[2..]);
 
-            for (var i = 0; i < steps; i++)
+            Repeat(steps, () =>
             {
-                rope[0] = Move(rope[0], direction);
+                rope[0] = MoveHead(rope[0], direction);
 
-                for (int j = 1; j < rope.Count; j++)
+                for (int knotIndex = 1; knotIndex < rope.Count; knotIndex++)
                 {
-                    rope[j] = MoveKnot(rope[j], rope[j - 1]);
+                    var current = rope[knotIndex];
+                    var previous = rope[knotIndex - 1];
+                    rope[knotIndex] = FollowKnot(current, previous);
                 }
 
                 visited.Add(rope.Last());
-            }
+            });
         }
 
         return visited.Count;
     }
 
-    private Knot Move(Knot pos, char direction)
+    private static Knot MoveHead(Knot pos, char direction)
     {
         return direction switch
         {
@@ -63,7 +56,7 @@ public class Puzzle
         };
     }
 
-    private Knot MoveKnot(Knot current, Knot ahead)
+    private static Knot FollowKnot(Knot current, Knot ahead)
     {
         var (dx, dy) = (ahead.x - current.x, ahead.y - current.y);
 
@@ -93,19 +86,25 @@ public class Puzzle
         var result = GetTailPositionCount("Aoc.Day9.input.txt", 2);
         Assert.Equal(6018, result);
     }
-    //
-    // [Fact]
-    // public void Part2Dev()
-    // {
-    //     var result = GetHighestScenicScore("Aoc.Day8.input.dev.txt");
-    //     Assert.Equal(8, result);
-    // }
-    //
-    // [Fact]
-    // public void Part2()
-    // {
-    //     var result = GetHighestScenicScore("Aoc.Day8.input.txt");
-    //     Assert.Equal(301392, result);
-    //     _output.WriteLine($"{result}");
-    // }
+
+    [Fact]
+    public void Part2Dev()
+    {
+        var result = GetTailPositionCount("Aoc.Day9.input.dev.txt", 10);
+        Assert.Equal(1, result);
+    }
+
+    [Fact]
+    public void Part22Dev()
+    {
+        var result = GetTailPositionCount("Aoc.Day9.input.dev2.txt", 10);
+        Assert.Equal(36, result);
+    }
+
+    [Fact]
+    public void Part2()
+    {
+        var result = GetTailPositionCount("Aoc.Day9.input.txt", 10);
+        Assert.Equal(2619, result);
+    }
 }
