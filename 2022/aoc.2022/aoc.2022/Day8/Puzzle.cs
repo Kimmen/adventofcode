@@ -1,14 +1,9 @@
-using FluentAssertions.Formatting;
-
-using System;
-using System.ComponentModel.Design;
-using System.Linq;
 using Xunit;
 using Xunit.Abstractions;
 
 namespace Aoc.Day8;
 
-public partial class Puzzle
+public class Puzzle
 {
     private readonly ITestOutputHelper _output;
 
