@@ -67,7 +67,6 @@ public class Puzzle
                 x = current.x += Math.Sign(dx),
                 y = current.y += Math.Sign(dy)
             };
-
         }
 
         return current;
