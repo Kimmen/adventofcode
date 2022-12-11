@@ -1,9 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading;
 
 using Xunit;
 using Xunit.Abstractions;
@@ -87,37 +84,48 @@ public class Puzzle
     }
 
     private long GoodMonkeyReleifer(long x) => x /= 3L;
-    private long TooLongTimeReleifer(long x) => x;
+
+    private long ModulusArchmeticDevReleifer(long x) 
+    {
+        //Look at each divisable in input for each monkey
+        const int diviserProduct = 23 * 19 * 13 * 17;
+        
+        return x % diviserProduct;
+    }
+
+    private long ModulusArchmeticReleifer(long x)
+    {
+        //Look at each divisable in input for each monkey
+        const int diviserProduct = 5 * 17 * 7 * 13 * 19 * 3 * 11 * 2;
+
+        return x % diviserProduct;
+    }
 
     [Fact]
     public void Part1Dev()
     {
         var monkeyBusiness = DetermineMonkeyBusiness("Aoc.Day11.input.dev.txt", 20, GoodMonkeyReleifer);
-        Assert.Equal(10605U, monkeyBusiness);
+        Assert.Equal(10605L, monkeyBusiness);
     }
 
     [Fact]
     public void Part1()
     {
         var monkeyBusiness = DetermineMonkeyBusiness("Aoc.Day11.input.txt", 20, GoodMonkeyReleifer);
-        Assert.Equal(54054U, monkeyBusiness);
+        Assert.Equal(54054L, monkeyBusiness);
     }
 
     [Fact]
     public void Part2Dev()
     {
-        var monkeyBusiness = DetermineMonkeyBusiness("Aoc.Day11.input.dev.txt", 10000, TooLongTimeReleifer);
-        Assert.Equal(2713310158U, monkeyBusiness);
+        var monkeyBusiness = DetermineMonkeyBusiness("Aoc.Day11.input.dev.txt", 10000, ModulusArchmeticDevReleifer);
+        Assert.Equal(2713310158L, monkeyBusiness);
     }
 
-    //[Fact]
-    //public void Part2()
-    //{
-    //    var ticker = new VideoRendererTicker();
-    //    RunVideoSystemInstructions("Aoc.Day10.input.txt", ticker);
-    //    var result = ticker.PrintPixels();
-    //    _output.WriteLine(result);
-
-    //    Assert.Equal("BUCACBUZ", "BUCACBUZ");
-    //}
+    [Fact]
+    public void Part2()
+    {
+        var monkeyBusiness = DetermineMonkeyBusiness("Aoc.Day11.input.txt", 10000, ModulusArchmeticReleifer);
+        Assert.Equal(14314925001L, monkeyBusiness);
+    }
 }
