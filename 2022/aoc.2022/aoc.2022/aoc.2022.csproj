@@ -13,6 +13,8 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <None Remove="Day11\input.dev.txt" />
+      <None Remove="Day11\input.txt" />
       <None Remove="Day10\input.dev.mini.txt" />
       <None Remove="Day4\input.dev.txt" />
       <None Remove="Day4\input.txt" />
@@ -39,6 +41,8 @@
     </ItemGroup>
 
     <ItemGroup>
+      <EmbeddedResource Include="Day11\input.dev.txt" />
+      <EmbeddedResource Include="Day11\input.txt" />
       <EmbeddedResource Include="Day10\input.dev.mini.txt" />
       <EmbeddedResource Include="Day4\input.dev.txt" />
       <EmbeddedResource Include="Day4\input.txt" />

@@ -11,8 +11,8 @@ public interface INode
 
 public partial class Directory : INode
 {
-    public Directory Root { get; set; } = null;
-    public Directory Parent { get; set; } = null;
+    public Directory Root { get; set; }
+    public Directory Parent { get; set; }
     public string Name { get; set; } = string.Empty;
     public int Size => Children.Sum(x => x.Size);
     public List<INode> Children { get; set; } = new();

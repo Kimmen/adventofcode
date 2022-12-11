@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using System;
 
-namespace Aoc.Day1;
+namespace Aoc;
 
-public static class EnumerableChunkers 
+public static class EnumerableChunkers
 {
     public static IEnumerable<IEnumerable<T>> ChunkBy<T>(this IEnumerable<T> source, Predicate<T> splitPredicate)
     {
