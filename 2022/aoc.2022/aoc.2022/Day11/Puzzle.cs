@@ -21,7 +21,7 @@ public class Puzzle
     private long DetermineMonkeyBusiness(string input, int rounds, Func<long, long> reliefer)
     {
         var monkeys = InputReader.ReadLinesFromResource(input)
-            .ChunkBy(x => string.IsNullOrWhiteSpace(x))
+            .ChunkBy(string.IsNullOrWhiteSpace)
             .Select(Monkey.Parse)
             .ToArray();
 
@@ -40,32 +40,7 @@ public class Puzzle
                     inspections[monkey.Index]++;
                 }
             }
-
-            var printInspections = (round + 1) switch
-            {
-                1 => true,
-                20 => true,
-                1000 => true,
-                2000 => true,
-                3000 => true,
-                4000 => true,
-                5000 => true,
-                6000 => true,
-                7000 => true,
-                8000 => true,
-                9000 => true,
-                10000 => true,
-                _ => false
-            };
-
-            if (printInspections)
-            {
-                _output.WriteLine($"== After round {round + 1} ==");
-                PrintInspections(inspections);
-            }
         });
-        
-        PrintInspections(inspections);
 
         return inspections
             .OrderDescending()
@@ -73,21 +48,12 @@ public class Puzzle
             .Aggregate(1L, (acc, x) => acc * x);
     }
 
-    private void PrintInspections(List<long> inspections)
-    {
-        for (int i = 0; i < inspections.Count; i++)
-        {
-            _output.WriteLine($"Monkey {i} inspected items {inspections[i]} times.");
-        }
-
-        _output.WriteLine("---");
-    }
-
     private long GoodMonkeyReleifer(long x) => x /= 3L;
 
     private long ModulusArchmeticDevReleifer(long x) 
     {
-        //Look at each divisable in input for each monkey
+        // Didn't want to refactor this part, so this is quick and dirty
+        // Look at each divisable in input for each monkey
         const int diviserProduct = 23 * 19 * 13 * 17;
         
         return x % diviserProduct;
@@ -95,7 +61,8 @@ public class Puzzle
 
     private long ModulusArchmeticReleifer(long x)
     {
-        //Look at each divisable in input for each monkey
+        // Didn't want to refactor this part, so this is quick and dirty
+        // Look at each divisable in input for each monkey
         const int diviserProduct = 5 * 17 * 7 * 13 * 19 * 3 * 11 * 2;
 
         return x % diviserProduct;
