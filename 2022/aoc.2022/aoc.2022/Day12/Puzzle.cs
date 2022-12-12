@@ -1,23 +1,12 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Security.Cryptography;
-using System.Xml.Linq;
 
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Aoc.Day12;
 
 public class Puzzle
 {
-    private readonly ITestOutputHelper _output;
-
-    public Puzzle(ITestOutputHelper output)
-    {
-        _output = output;
-    }
-
     private int DetermineShortestHike(string input, Func<(Terrain terrain, Elevation start), Elevation[]> determineStartingPoints)
     {
         var data = InputReader.ReadContentFromResource(input);
@@ -26,12 +15,8 @@ public class Puzzle
         var startingPoints = determineStartingPoints((terrain, start));
         var minSteps = int.MaxValue;
 
-        foreach (var startingPoint in startingPoints)
-        {
-            var shortestPath = AStar.DetermineShortestPath(terrain, start, end);
-            minSteps = Math.Min(minSteps, shortestPath.Count() - 1);
-        }
-
+        var shortestPath = AStar.DetermineShortestPath(terrain, startingPoints, end);
+        minSteps = Math.Min(minSteps, shortestPath.Count() - 1);
 
         return minSteps;
     }
@@ -39,6 +24,13 @@ public class Puzzle
     private Elevation[] HikeOnlyFromStart((Terrain terrain, Elevation start) x)
     {
         return new[] { x.start }; 
+    }
+
+    private Elevation[] HikeFromAllLowest((Terrain terrain, Elevation start) x)
+    {
+        var (terrain, _) = x;
+
+        return terrain.GetAllElevations.Where(x => x.Value == 0).ToArray();
     }
 
     [Fact]
@@ -54,18 +46,18 @@ public class Puzzle
         var shortestPath = DetermineShortestHike("Aoc.Day12.input.txt", HikeOnlyFromStart);
         Assert.Equal(391, shortestPath);
     }
-    //
-    // [Fact]
-    // public void Part2Dev()
-    // {
-    //     var monkeyBusiness = DetermineMonkeyBusiness("Aoc.Day11.input.dev.txt", 10000, ModulusArchmeticDevReleifer);
-    //     Assert.Equal(2713310158L, monkeyBusiness);
-    // }
-    //
-    // [Fact]
-    // public void Part2()
-    // {
-    //     var monkeyBusiness = DetermineMonkeyBusiness("Aoc.Day11.input.txt", 10000, ModulusArchmeticReleifer);
-    //     Assert.Equal(14314925001L, monkeyBusiness);
-    // }
+
+    [Fact]
+    public void Part2Dev()
+    {
+        var shortestPath = DetermineShortestHike("Aoc.Day12.input.dev.txt", HikeFromAllLowest);
+        Assert.Equal(29, shortestPath);
+    }
+
+    [Fact]
+    public void Part2()
+    {
+        var shortestPath = DetermineShortestHike("Aoc.Day12.input.txt", HikeFromAllLowest);
+        Assert.Equal(386, shortestPath);
+    }
 }

@@ -7,25 +7,17 @@ namespace Aoc.Day12;
 
 internal class AStar
 {
-    public static IEnumerable<Elevation> DetermineShortestPath(Terrain terrain, Elevation start, Elevation end)
+    public static IEnumerable<Elevation> DetermineShortestPath(Terrain terrain, Elevation[] starts, Elevation end)
     {
         var nearestToStart = new Dictionary<Elevation, Elevation>();
         var visited = new HashSet<Elevation>();
-        var distanceFromStart = new Dictionary<Elevation, int>
-        {
-            [start] = 0
-        };
-        var heuristicsToEnd = new ConcurrentDictionary<Elevation, int>()
-        {
-            [start] = CalculateManhattanDistanceToEnd(start, end)
-        };
+        var distanceFromStart = starts.ToDictionary(x => x, x => 0);
+        var heuristicsToEnd = new ConcurrentDictionary<Elevation, int>(
+            starts.Select(x => new KeyValuePair<Elevation, int>(x, CalculateManhattanDistanceToEnd(x, end))));
 
-        var prioQueue = new List<Elevation>
-        {
-            start
-        };
+        var prioQueue = new List<Elevation>(starts);
 
-        var current = start;
+        var current = starts.First();
         while (prioQueue.Any() && current != end)
         {
             prioQueue = prioQueue
