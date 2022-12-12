@@ -23,7 +23,7 @@ public class Puzzle
 
         var shortestPath = AStar.DetermineShortestPath(terrain, start, end);
 
-        return shortestPath.Count();
+        return shortestPath.Count() - 1;
     }
 
     [Fact]
@@ -32,13 +32,13 @@ public class Puzzle
         var shortestPath = DetermineShortestPath("Aoc.Day12.input.dev.txt");
         Assert.Equal(31, shortestPath);
     }
-    //
-    // [Fact]
-    // public void Part1()
-    // {
-    //     var monkeyBusiness = DetermineMonkeyBusiness("Aoc.Day11.input.txt", 20, GoodMonkeyReleifer);
-    //     Assert.Equal(54054L, monkeyBusiness);
-    // }
+
+    [Fact]
+    public void Part1()
+    {
+        var shortestPath = DetermineShortestPath("Aoc.Day12.input.txt");
+        Assert.Equal(391, shortestPath);
+    }
     //
     // [Fact]
     // public void Part2Dev()

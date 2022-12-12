@@ -17,7 +17,7 @@ internal class AStar
         };
         var heuristicsToEnd = new ConcurrentDictionary<Elevation, int>()
         {
-            [start] = CalculateHeuristicsToEnd(start, end)
+            [start] = CalculateManhattanDistanceToEnd(start, end)
         };
 
         var prioQueue = new List<Elevation>
@@ -26,10 +26,10 @@ internal class AStar
         };
 
         var current = start;
-        while (prioQueue.Any() || current != end)
+        while (prioQueue.Any() && current != end)
         {
             prioQueue = prioQueue
-                .OrderBy(x => distanceFromStart[x] + heuristicsToEnd.GetOrAdd(x, x => CalculateHeuristicsToEnd(x, end)))
+                .OrderBy(x => distanceFromStart[x] + heuristicsToEnd.GetOrAdd(x, x => CalculateManhattanDistanceToEnd(x, end)))
                 .ToList();
             current = prioQueue.First();
             prioQueue.Remove(current);
@@ -52,7 +52,7 @@ internal class AStar
                 }
                 
                 distanceFromStart[elevation] = cost;
-                nearestToStart.TryAdd(elevation, current);
+                nearestToStart[elevation] = current;
 
                 if (!prioQueue.Contains(elevation))
                 {
@@ -65,11 +65,13 @@ internal class AStar
 
         var shortestPath = new List<Elevation> { end };
         current = end;
-        while (!nearestToStart.ContainsKey(current))
+        while (nearestToStart.ContainsKey(current))
         {
             current = nearestToStart[current];
             shortestPath.Add(current);
         }
+
+        shortestPath.Reverse();
 
         return shortestPath;
     }
@@ -78,14 +80,14 @@ internal class AStar
     {
         return elevation.Value - current.Value < 2 
             ? 1 
-            : 10;
+            : 1000;
     }
 
-    private static int CalculateHeuristicsToEnd(Elevation current, Elevation end)
+    private static int CalculateManhattanDistanceToEnd(Elevation current, Elevation end)
     {
         var distX = Math.Abs(end.Pos.X - current.Pos.X);
         var distY = Math.Abs(end.Pos.Y - current.Pos.Y);
-        var heuristics = Convert.ToInt32(Math.Sqrt(distX * distX + distY * distY) * 1000);
+        var heuristics = distX + distY;
 
         return heuristics;
     }
