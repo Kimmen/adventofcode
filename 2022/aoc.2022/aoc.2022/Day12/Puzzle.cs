@@ -1,3 +1,7 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Security.Cryptography;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -14,9 +18,12 @@ public class Puzzle
 
     private int DetermineShortestPath(string input)
     {
-        var data = InputReader.ReadLinesFromResource(input);
+        var data = InputReader.ReadContentFromResource(input);
+        var (terrain, start, end) = Terrain.Parse(data);
 
-        return -1;
+        var shortestPath = AStar.DetermineShortestPath(terrain, start, end);
+
+        return shortestPath.Count();
     }
 
     [Fact]
