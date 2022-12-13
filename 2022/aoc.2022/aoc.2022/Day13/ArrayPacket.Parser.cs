@@ -6,7 +6,7 @@ public partial class ArrayPacket
 {
     public static ArrayPacket Parse(string input)
     {
-        var i = 1;
+        var i = 1; //skip the first char, we know it's a start of array
         var currentArray = new ArrayPacket() { InputLine = input };
         while (i < input.Length)
         {
