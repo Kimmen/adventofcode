@@ -69,7 +69,7 @@ public class Puzzle
     public void Part1()
     {
         var result = DetermineUnitOfSands("Aoc.Day14.input.txt");
-        Assert.Equal(24, result);
+        Assert.Equal(793, result);
     }
 
     //[Fact]
