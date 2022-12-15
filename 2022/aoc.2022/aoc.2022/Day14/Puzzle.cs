@@ -58,7 +58,12 @@ public class Puzzle
         return null;
     }
 
-    private bool InsideBounderies((int x, int y) p, (int x, int y) min, (int x, int y) max)
+    private bool IsPlotted((int x, int y) p, HashSet<(int x, int y)> plotted, (int x, int y) min, (int x, int y) max)
+    {
+        return plotted.Contains(p);
+    }
+
+    private bool InsideBounderies((int x, int y) p, HashSet<(int x, int y)> plotted, (int x, int y) min, (int x, int y) max)
     {
         if (p.x < min.x || p.x > max.x) { return false; }
         if (p.y < min.y || p.y > max.y) { return false; }
@@ -71,31 +76,36 @@ public class Puzzle
         return plotted.Contains(p) || p.y > max.y + 1;
     }
 
+    private bool IsNonPlottedStart((int x, int y) p, HashSet<(int x, int y)> plotted, (int x, int y) min, (int x, int y) max)
+    {
+        return p != (500, 0) || !plotted.Contains(p);
+    }
+
     [Fact]
     public void Part1Dev()
     {
-        var result = DetermineUnitOfSands("Aoc.Day14.input.dev.txt", (p, plotted, _,  _) => plotted.Contains(p), (p, _, min, max) => InsideBounderies(p, min, max));
+        var result = DetermineUnitOfSands("Aoc.Day14.input.dev.txt", IsPlotted, InsideBounderies);
         Assert.Equal(24, result);
     }
 
     [Fact]
     public void Part1()
     {
-        var result = DetermineUnitOfSands("Aoc.Day14.input.txt", (p, plotted, _, _) => plotted.Contains(p), (p, _, min, max) => InsideBounderies(p, min, max));
+        var result = DetermineUnitOfSands("Aoc.Day14.input.txt", IsPlotted, InsideBounderies);
         Assert.Equal(793, result);
     }
 
     [Fact]
     public void Part2Dev()
     {
-        var result = DetermineUnitOfSands("Aoc.Day14.input.dev.txt", IsPlottedOrHitRockBottom, (p, plotted, _, _) => p != (500, 0) || !plotted.Contains(p));
+        var result = DetermineUnitOfSands("Aoc.Day14.input.dev.txt", IsPlottedOrHitRockBottom, IsNonPlottedStart);
         Assert.Equal(93, result);
     }
 
     [Fact]
     public void Part2()
     {
-        var result = DetermineUnitOfSands("Aoc.Day14.input.txt", IsPlottedOrHitRockBottom, (p, plotted, _, _) => p != (500, 0) || !plotted.Contains(p));
+        var result = DetermineUnitOfSands("Aoc.Day14.input.txt", IsPlottedOrHitRockBottom, IsNonPlottedStart);
         Assert.Equal(24166, result);
     }
 }
