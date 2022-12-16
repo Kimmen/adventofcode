@@ -1,9 +1,7 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Drawing;
 using System.Linq;
-using System.Security;
 
 using Xunit;
 
@@ -16,7 +14,6 @@ public class Puzzle
         var sensors = InputReader
             .ReadLinesFromResource(input)
             .Select(Sensor.Parse)
-            .Where(s => s.Intersects(row))
             .ToList();
 
         var beacons = sensors.Select(x => x.ClosestBeacon)
@@ -24,19 +21,70 @@ public class Puzzle
             .ToList();
 
         var beaconsOnRow = beacons.Count(b => b.Y == row);
+        var slices = GetAreaSlicesForRow(sensors, row);
+
+        var sum = slices.Sum(x => x.max - x.min);
+
+        return sum + 1 - beaconsOnRow;
+    }
+
+    public long DetermineTuningFrequency(string input, long minCoordinate, long maxCoordinate)
+    {
+        var sensors = InputReader
+           .ReadLinesFromResource(input)
+           .Select(Sensor.Parse)
+           .ToList();
+
+        var beacons = sensors.Select(x => x.ClosestBeacon)
+            .Distinct()
+            .ToList();
+
+        var (x, y) = (0L, 0L);
+
+        for (var row = minCoordinate; row <=maxCoordinate; row++)
+        {
+            var beaconsOnRow = beacons.Count(b => b.Y == row);
+            var slices = GetAreaSlicesForRow(sensors, row);
+
+            var minX = minCoordinate;
+            
+            foreach (var (min, max) in slices)
+            {
+                if(minX < min)
+                {
+                    x = min - 1;
+                    y = row;
+                    break;
+                }
+
+                minX = max;
+            }
+
+            //it has been found, break;
+            if(x != 0)
+            {
+                break;
+            }
+        }
+
+        return x * 4000000 + y;
+    }
+
+    private List<(long min, long max)> GetAreaSlicesForRow(IList<Sensor> sensors, long row)
+    {
         var slices = sensors
-            .Select(s => s.SensorAreadSlice(row))
+            .Select(s => s.SensorAreaSlice(row))
             .Where(s => s.HasValue)
             .Select(s => s!.Value)
             .OrderBy(s => s.min)
             .ToList();
 
         var i = 1;
-        while(i < slices.Count)
+        while (i < slices.Count)
         {
             var s1 = slices[i - 1];
             var s2 = slices[i];
-            if(Overlapping(s1, s2))
+            if (Overlapping(s1, s2))
             {
                 slices[i - 1] = Combine(s1, s2);
                 slices.RemoveAt(i);
@@ -47,17 +95,15 @@ public class Puzzle
             }
         }
 
-        var sum = slices.Sum(x => x.max - x.min);
-
-        return sum + 1 - beaconsOnRow;
+        return slices;
     }
 
-    private (long min, long max) Combine((long min, long max) s1, (long min, long max) s2)
+    private static (long min, long max) Combine((long min, long max) s1, (long min, long max) s2)
     {
         return (Math.Min(s1.min, s2.min), Math.Max(s1.max, s2.max));
     }
 
-    private bool Overlapping((long min, long max) lower, (long min, long max) higher)
+    private static bool Overlapping((long min, long max) lower, (long min, long max) higher)
     {
         return lower.max >= higher.min;
     }
@@ -76,17 +122,17 @@ public class Puzzle
         Assert.Equal(4961647, result);
     }
 
-    //[Fact]
-    //public void Part2Dev()
-    //{
-    //    var result = DetermineUnitOfSands("Aoc.Day14.input.dev.txt", IsPlottedOrHitRockBottom, IsNonPlottedStart);
-    //    Assert.Equal(93, result);
-    //}
+    [Fact]
+    public void Part2Dev()
+    {
+        var result = DetermineTuningFrequency("Aoc.Day15.input.dev.txt", 0, 20);
+        Assert.Equal(56000011, result);
+    }
 
-    //[Fact]
-    //public void Part2()
-    //{
-    //    var result = DetermineUnitOfSands("Aoc.Day14.input.txt", IsPlottedOrHitRockBottom, IsNonPlottedStart);
-    //    Assert.Equal(24166, result);
-    //}
+    [Fact]
+    public void Part2()
+    {
+        var result = DetermineTuningFrequency("Aoc.Day15.input.txt", 0, 4000000);
+        Assert.Equal(12274327017867, result);
+    }
 }

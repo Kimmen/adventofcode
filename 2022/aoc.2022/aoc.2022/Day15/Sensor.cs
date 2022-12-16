@@ -36,7 +36,7 @@ namespace Aoc.Day15
             return row >= up.Y && row <= down.Y;
         }
 
-        internal (long min, long max)? SensorAreadSlice(long row)
+        internal (long min, long max)? SensorAreaSlice(long row)
         {
             if (!Intersects(row))
             {
