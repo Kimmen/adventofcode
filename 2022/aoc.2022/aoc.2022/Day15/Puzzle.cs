@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Drawing;
 using System.Linq;
 
 using Xunit;
@@ -20,19 +22,16 @@ public class Puzzle
             .Distinct()
             .ToList();
 
-        var (min, max) = (long.MaxValue, long.MinValue);
-
-        foreach (var sensor in sensors)
-        {
-            var slice = sensor.SensorAreadSlice(row);
-            if(slice != null)
+        var (min, max) = sensors
+            .Select(s => s.SensorAreadSlice(row))
+            .Where(s => s.HasValue)
+            .Select(s => s!.Value)
+            .Aggregate((min: long.MaxValue, max: long.MinValue), (acc, s) =>
             {
-                var (sliceMin, sliceMax) = slice.Value;
-                min = Math.Min(sliceMin, min);
-                max = Math.Max(sliceMax, max);
-            }
-            
-        }
+                var (cmin, cmax) = acc;
+                var (sliceMin, sliceMax) = s;
+                return (Math.Min(sliceMin, cmin), Math.Max(sliceMax, cmax));
+            });
 
         var beaconsOnRow = beacons.Count(b => b.Y == row);
         return max - min + 1 - beaconsOnRow;
