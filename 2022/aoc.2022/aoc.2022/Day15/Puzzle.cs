@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
 using System.Linq;
+using System.Security;
 
 using Xunit;
 
@@ -22,19 +23,43 @@ public class Puzzle
             .Distinct()
             .ToList();
 
-        var (min, max) = sensors
+        var beaconsOnRow = beacons.Count(b => b.Y == row);
+        var slices = sensors
             .Select(s => s.SensorAreadSlice(row))
             .Where(s => s.HasValue)
             .Select(s => s!.Value)
-            .Aggregate((min: long.MaxValue, max: long.MinValue), (acc, s) =>
-            {
-                var (cmin, cmax) = acc;
-                var (sliceMin, sliceMax) = s;
-                return (Math.Min(sliceMin, cmin), Math.Max(sliceMax, cmax));
-            });
+            .OrderBy(s => s.min)
+            .ToList();
 
-        var beaconsOnRow = beacons.Count(b => b.Y == row);
-        return max - min + 1 - beaconsOnRow;
+        var i = 1;
+        while(i < slices.Count)
+        {
+            var s1 = slices[i - 1];
+            var s2 = slices[i];
+            if(Overlapping(s1, s2))
+            {
+                slices[i - 1] = Combine(s1, s2);
+                slices.RemoveAt(i);
+            }
+            else
+            {
+                i++;
+            }
+        }
+
+        var sum = slices.Sum(x => x.max - x.min);
+
+        return sum + 1 - beaconsOnRow;
+    }
+
+    private (long min, long max) Combine((long min, long max) s1, (long min, long max) s2)
+    {
+        return (Math.Min(s1.min, s2.min), Math.Max(s1.max, s2.max));
+    }
+
+    private bool Overlapping((long min, long max) lower, (long min, long max) higher)
+    {
+        return lower.max >= higher.min;
     }
 
     [Fact]
