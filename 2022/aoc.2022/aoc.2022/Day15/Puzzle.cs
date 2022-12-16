@@ -8,7 +8,7 @@ namespace Aoc.Day15;
 
 public class Puzzle
 {
-    private int DetermineInvalidBeaconPositions(string input, long row)
+    private long DetermineInvalidBeaconPositions(string input, long row)
     {
         var sensors = InputReader
             .ReadLinesFromResource(input)
@@ -20,11 +20,22 @@ public class Puzzle
             .Distinct()
             .ToList();
 
-        var distinctPoints = new HashSet<Pos>(sensors
-            .SelectMany(s => s.OverlappingPoints(row))
-            .Except(beacons));
+        var (min, max) = (long.MaxValue, long.MinValue);
 
-        return distinctPoints.Count;
+        foreach (var sensor in sensors)
+        {
+            var slice = sensor.SensorAreadSlice(row);
+            if(slice != null)
+            {
+                var (sliceMin, sliceMax) = slice.Value;
+                min = Math.Min(sliceMin, min);
+                max = Math.Max(sliceMax, max);
+            }
+            
+        }
+
+        var beaconsOnRow = beacons.Count(b => b.Y == row);
+        return max - min + 1 - beaconsOnRow;
     }
 
     [Fact]
