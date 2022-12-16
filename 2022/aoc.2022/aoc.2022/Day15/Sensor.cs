@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 
@@ -53,78 +52,14 @@ namespace Aoc.Day15
             return (leftIntersection.X, rightIntersection.X);
         }
 
-        internal IList<Pos> OverlappingPoints(long row)
-        {
-            if (!Intersects(row))
-            {
-                return new Pos[0]; 
-            }
-
-            var middle = left.Y < row
-                ? down
-                : up;
-
-            var leftIntersection = left;
-            var rightIntersection = right;
-
-            Traverse(left, middle, p =>
-            {
-                if (p.Y == row)
-                {
-                    leftIntersection = p;
-                    return false;
-                }
-
-                return true;
-            });
-
-            Traverse(middle, right, p =>
-            {
-                if (p.Y == row)
-                {
-                    rightIntersection = p;
-                    return false;
-                }
-
-                return true;
-            });
-
-            var positions = new List<Pos>();
-            Traverse(leftIntersection, rightIntersection, p =>
-            {
-                positions.Add(p);
-                return true;
-            });
-
-            return positions;
-        }
-
-        private void Traverse(Pos start, Pos end, Func<Pos, bool> process)
-        {
-            var curr = start;
-            if(!process(curr)) { return; }
-
-            while (curr != end)
-            {
-                var dx = Math.Sign(end.X - curr.X);
-                var dy = Math.Sign(end.Y - curr.Y);
-
-                curr = new Pos(curr.X + dx, curr.Y + dy);
-
-                if (!process(curr))
-                {
-                    return;
-                }
-            }
-        }
-
+        /// <summary>
+        /// Finds intersection point via Determinant Method
+        /// </summary>
         private Pos GetIntersectionPoint(long y, (Pos left, Pos right) shape)
         {
             const double factor = 10000D;
-            //left 
             var row = (left: new Pos(shape.left.X - 1, y), right: new Pos(right.X + 1, y));
 
-            // Determinant Method
             double x1_ = row.left.X / factor;
             double y1_ = row.left.Y / factor;
             double x2_ = row.right.X / factor;

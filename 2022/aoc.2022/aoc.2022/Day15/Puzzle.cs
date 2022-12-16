@@ -1,9 +1,9 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
 using Xunit;
+using Xunit.Sdk;
 
 namespace Aoc.Day15;
 
@@ -25,49 +25,42 @@ public class Puzzle
 
         var sum = slices.Sum(x => x.max - x.min);
 
+        //1 is some sort of edge thing. Haven't looked into it.
         return sum + 1 - beaconsOnRow;
     }
 
     public long DetermineTuningFrequency(string input, long minCoordinate, long maxCoordinate)
     {
+        static long CalculateTuningFrequency(long x, long y) => x * 4000000 + y;
+
         var sensors = InputReader
            .ReadLinesFromResource(input)
            .Select(Sensor.Parse)
            .ToList();
 
-        var beacons = sensors.Select(x => x.ClosestBeacon)
-            .Distinct()
-            .ToList();
-
-        var (x, y) = (0L, 0L);
-
         for (var row = minCoordinate; row <=maxCoordinate; row++)
         {
-            var beaconsOnRow = beacons.Count(b => b.Y == row);
             var slices = GetAreaSlicesForRow(sensors, row);
 
-            var minX = minCoordinate;
-            
-            foreach (var (min, max) in slices)
+            //we have found a hole in the sensor area slice, pick x in first hole
+            if(slices.Count > 1)
             {
-                if(minX < min)
-                {
-                    x = min - 1;
-                    y = row;
-                    break;
-                }
-
-                minX = max;
+                return CalculateTuningFrequency(slices[1].min - 1, row);
             }
 
-            //it has been found, break;
-            if(x != 0)
+            //Check if we have a distress signal outside of the sensor area
+            var (sMin, sMax) = slices[0];
+            if(minCoordinate < sMin)
             {
-                break;
+                return CalculateTuningFrequency(sMin - 1, row);
+            } 
+            if(sMax < maxCoordinate)
+            {
+                return CalculateTuningFrequency(sMax + 1, row);
             }
         }
 
-        return x * 4000000 + y;
+        return 0;
     }
 
     private List<(long min, long max)> GetAreaSlicesForRow(IList<Sensor> sensors, long row)
@@ -79,6 +72,7 @@ public class Puzzle
             .OrderBy(s => s.min)
             .ToList();
 
+        //Combining slices that overlapps.
         var i = 1;
         while (i < slices.Count)
         {
