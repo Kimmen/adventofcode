@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 
 using Xunit;
-using Xunit.Sdk;
 
 namespace Aoc.Day15;
 
@@ -63,7 +62,7 @@ public class Puzzle
         return 0;
     }
 
-    private List<(long min, long max)> GetAreaSlicesForRow(IList<Sensor> sensors, long row)
+    private static List<(long min, long max)> GetAreaSlicesForRow(IList<Sensor> sensors, long row)
     {
         var slices = sensors
             .Select(s => s.SensorAreaSlice(row))
