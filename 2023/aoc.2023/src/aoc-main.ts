@@ -1,5 +1,6 @@
 import { LitElement, css, html } from 'lit'
 import { customElement, property, state } from 'lit/decorators.js'
+import './day00/aoc-day0'
 /**
  * An example element.
  *
@@ -29,7 +30,7 @@ export class AocMain extends LitElement {
       </ul>
     </nav>
     <div class="day-container">
-
+       <aoc-day-0 ></aoc-day-0>
     </div>
     `
   }
@@ -80,6 +81,10 @@ export class AocMain extends LitElement {
       backdrop-filter: blur(6.1px);
       -webkit-backdrop-filter: blur(6.1px);
       border: 1px solid rgba(75, 75, 75, 0.37);
+
+      padding: 8rem;
+      display: flex;
+      place-items: stretch;
     }
   `
 }
