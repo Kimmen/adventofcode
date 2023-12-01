@@ -1,6 +1,7 @@
-import { LitElement, css, html } from 'lit'
+import { LitElement, css, html, nothing } from 'lit'
 import { customElement, property, state } from 'lit/decorators.js'
 import './day00/aoc-day0'
+import './day01/aoc-day1'
 /**
  * An example element.
  *
@@ -16,7 +17,7 @@ export class AocMain extends LitElement {
   docsHint = 'Click on the Vite and Lit logos to learn more'
 
   @state()
-  selectedDay = 0;
+  selectedDay = 1;
 
 
   render() {
@@ -30,7 +31,8 @@ export class AocMain extends LitElement {
       </ul>
     </nav>
     <div class="day-container">
-       <aoc-day-0 ></aoc-day-0>
+      ${this.selectedDay == 0 ? html`<aoc-day-0 ></aoc-day-0>` : nothing }
+      ${this.selectedDay == 1 ? html`<aoc-day-1 ></aoc-day-1>` : nothing }
     </div>
     `
   }
