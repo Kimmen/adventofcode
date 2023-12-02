@@ -2,7 +2,6 @@ import { LitElement, css, html, nothing } from 'lit'
 import { customElement, property, state } from 'lit/decorators.js'
 import './day00/aoc-day0'
 import './day01/aoc-day1'
-import './day02/aoc-day2'
 import './day02a/aoc-day2a'
 /**
  * An example element.
