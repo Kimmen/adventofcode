@@ -43,14 +43,14 @@ export const pureDigitExtractor = (line: string) => line.match(/\d/g)!.map(x => 
 
 export const readableExtractor = (line: string) =>  {
     return (line
-        .replace('one', '1')
-        .replace('two', '2')
-        .replace('three', '3')
-        .replace('four', '4')
-        .replace('five', '5')
-        .replace('six', '6')
-        .replace('seven', '7')
-        .replace('eight', '8')
-        .replace('nine', '9')
+        .replaceAll('one', 'one1one')
+        .replaceAll('two', 'two2two')
+        .replaceAll('three', 'three3three')
+        .replaceAll('four', 'four4four')
+        .replaceAll('five', 'five5five')
+        .replaceAll('six', 'six6six')
+        .replaceAll('seven', 'seven7seven')
+        .replaceAll('eight', 'eight8eight')
+        .replaceAll('nine', 'nine9nine')
         .match(/\d/g) || []).map(x => parseInt(x))
 }
