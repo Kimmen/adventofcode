@@ -31,12 +31,12 @@ export type GameEvalResult = Result & {
 export type EndResult = Result & {
     type: 'end'
     sum: number
+    isExpected: boolean
 }
 
-self.onmessage = (event: MessageEvent<{ input: string, bag: Bag }>) => {
-    const { input, bag } = event.data
+self.onmessage = (event: MessageEvent<{ input: string, bag: Bag, expectedSum: number }>) => {
+    const { input, bag, expectedSum } = event.data
     const games = readLines(input).map(l => {
-        // const gameMatch = l.match(/^Game (?<id>\d+): (?<subsets>.+)$/gm)!
         const gameMatch = /^Game (?<id>\d+): (?<subsets>.+)$/gm.exec(l)
 
         if (!gameMatch) {
@@ -81,5 +81,5 @@ self.onmessage = (event: MessageEvent<{ input: string, bag: Bag }>) => {
     .filter(g => !g.impossible)
 
     const sum = possibleGames.reduce((prev, g) => prev + g.gameId , 0)
-    self.postMessage({type: 'end', sum } as EndResult)
+    self.postMessage({type: 'end', sum, isExpected: sum === expectedSum } as EndResult)
 }

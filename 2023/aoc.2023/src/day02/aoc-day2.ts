@@ -21,6 +21,7 @@ export class AocDay2 extends LitElement {
     }
     @state() games: Game[] = []
     @state() sum: number | null = null 
+    @state() isExpectedSum: boolean = false 
 
     connectedCallback() {
         super.connectedCallback();
@@ -43,6 +44,7 @@ export class AocDay2 extends LitElement {
                 case 'end': 
                     const end = data as EndResult
                     this.sum = end.sum
+                    this.isExpectedSum = end.isExpected
                     break
             }
             
@@ -53,24 +55,31 @@ export class AocDay2 extends LitElement {
     startPart1Dev() {
        this.games = []
        this.sum = 0
-        this.worker.postMessage({ input: devData, bag: { red: 12, green: 13, blue: 14 } as Bag })
+       this.isExpectedSum = false
+        this.worker.postMessage({ input: devData, bag: { red: 12, green: 13, blue: 14 } as Bag, expectedSum: 8 })
     }
 
     startPart1() {
         this.games = []
         this.sum = 0
-        this.worker.postMessage({ input: devData })
+       this.isExpectedSum = false
+
+       this.worker.postMessage({ input: data, bag: { red: 12, green: 13, blue: 14 } as Bag, expectedSum: 8 })
     }
 
     startPart2Dev() {
         this.games = []
         this.sum = 0
+       this.isExpectedSum = false
+
         this.worker.postMessage({ input: devData })
     }
 
     startPart2() {
         this.games = []
         this.sum = 0
+       this.isExpectedSum = false
+
         this.worker.postMessage({ input: devData })
     }
 
@@ -83,8 +92,8 @@ export class AocDay2 extends LitElement {
             <button @click=${this.startPart2Dev} disabled>Part2.Dev</button>
             <button @click=${this.startPart2} disabled>Part2</button>
         </div>
-        <section class=`id-sum`>
-            IdSum: ${this.sum}
+        <section class=${this.isExpectedSum ? 'success' : ''}>
+            IdSum: ${this.sum} ${this.isExpectedSum}
             </section>
         <section class="games">
             ${repeat(this.games, (g) => g.gameId, (g, index)=> html`
@@ -119,6 +128,10 @@ export class AocDay2 extends LitElement {
         section.games div.impossible {
             text-decoration: line-through;
             color: rgb(64,64,64)
+        }
+
+        section.success {
+            color: rgb(64, 191, 96);
         }
 
         section.games p {
