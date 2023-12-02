@@ -2,6 +2,7 @@ import { LitElement, css, html, nothing } from 'lit'
 import { customElement, property, state } from 'lit/decorators.js'
 import './day00/aoc-day0'
 import './day01/aoc-day1'
+import './day02/aoc-day2'
 /**
  * An example element.
  *
@@ -17,7 +18,7 @@ export class AocMain extends LitElement {
   docsHint = 'Click on the Vite and Lit logos to learn more'
 
   @state()
-  selectedDay = 1;
+  selectedDay = 2;
 
 
   render() {
@@ -28,11 +29,13 @@ export class AocMain extends LitElement {
       <ul class="list">
         <li><a href="#" @click=${() => this.selectedDay = 0}>Day 0</a></li>
         <li><a href="#" @click=${() => this.selectedDay = 1}>Day 1</a></li>
+        <li><a href="#" @click=${() => this.selectedDay = 2}>Day 2</a></li>
       </ul>
     </nav>
     <div class="day-container">
       ${this.selectedDay == 0 ? html`<aoc-day-0 ></aoc-day-0>` : nothing }
       ${this.selectedDay == 1 ? html`<aoc-day-1 ></aoc-day-1>` : nothing }
+      ${this.selectedDay == 2 ? html`<aoc-day-2 ></aoc-day-2>` : nothing }
     </div>
     `
   }
@@ -40,7 +43,7 @@ export class AocMain extends LitElement {
   static styles = css`
     :host {
       background-image: url('./src/assets/background.jpg');
-      background-size: cover;
+      background-size: contain;
       display: flex;
       place-items: stretch;
       padding: 10rem 3rem 3rem 3rem;
@@ -75,7 +78,7 @@ export class AocMain extends LitElement {
     }
 
     .day-container {
-      flex: 1 1 auto;
+      flex: 1 0 auto;
       
       background: rgba(10, 10, 10, 0.9);
       border-radius: 16px;
@@ -85,8 +88,7 @@ export class AocMain extends LitElement {
       border: 1px solid rgba(75, 75, 75, 0.37);
 
       padding: 8rem;
-      display: flex;
-      place-items: stretch;
+
     }
   `
 }
