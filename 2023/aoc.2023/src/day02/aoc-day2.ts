@@ -18,8 +18,8 @@ type GameViewModel = {
     isExpectgedTotal: boolean
 }
 
-@customElement('aoc-day-2a')
-export class AocDay2a extends LitElement {
+@customElement('aoc-day-2')
+export class AocDay2 extends LitElement {
     constructor() { super(); }
 
     @state() current: GameViewModel = {

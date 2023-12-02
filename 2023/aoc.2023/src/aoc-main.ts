@@ -2,7 +2,7 @@ import { LitElement, css, html, nothing } from 'lit'
 import { customElement, property, state } from 'lit/decorators.js'
 import './day00/aoc-day0'
 import './day01/aoc-day1'
-import './day02a/aoc-day2a'
+import './day02/aoc-day2'
 /**
  * An example element.
  *
@@ -35,7 +35,7 @@ export class AocMain extends LitElement {
     <div class="day-container">
       ${this.selectedDay == 0 ? html`<aoc-day-0 ></aoc-day-0>` : nothing }
       ${this.selectedDay == 1 ? html`<aoc-day-1 ></aoc-day-1>` : nothing }
-      ${this.selectedDay == 2 ? html`<aoc-day-2a ></aoc-day-2a>` : nothing }
+      ${this.selectedDay == 2 ? html`<aoc-day-2 ></aoc-day-2>` : nothing }
     </div>
     `
   }
