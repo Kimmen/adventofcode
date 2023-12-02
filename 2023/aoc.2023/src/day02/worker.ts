@@ -1,6 +1,19 @@
 import { readLines } from '../helpers'
 
-export type Bag = CubeSet
+export type Input = {
+    data: string
+    expectedTotal: number
+    config: CalcMinBag | FitBag
+}
+
+export type CalcMinBag = {
+    type: 'calc'
+}
+
+export type FitBag = {
+    type: 'fit',
+    bag:  CubeSet
+}
 
 export type CubeSet = {
     red: number
@@ -9,9 +22,10 @@ export type CubeSet = {
 }
 
 export type Game = {
+    minBag: CubeSet
     gameId: number
     sets: CubeSet[]
-    impossible: boolean | unknown
+    impossible: boolean
 }
 
 export type Result = {
@@ -30,13 +44,13 @@ export type GameEvalResult = Result & {
 
 export type EndResult = Result & {
     type: 'end'
-    sum: number
+    total: number
     isExpected: boolean
 }
 
-self.onmessage = (event: MessageEvent<{ input: string, bag: Bag, expectedSum: number }>) => {
-    const { input, bag, expectedSum } = event.data
-    const games = readLines(input).map(l => {
+self.onmessage = (event: MessageEvent<Input>) => {
+    const { data, config, expectedTotal } = event.data
+    const games = readLines(data).map(l => {
         const gameMatch = /^Game (?<id>\d+): (?<subsets>.+)$/gm.exec(l)
 
         if (!gameMatch) {
@@ -66,20 +80,51 @@ self.onmessage = (event: MessageEvent<{ input: string, bag: Bag, expectedSum: nu
                 return cubeSet
             })
 
-            const game: Game = { gameId, sets, impossible: null } 
+            const game: Game = { gameId, sets, impossible: false, minBag: { red: 0, green: 0, blue: 0 } } 
             self.postMessage({type: 'game', game  } as GameResult)
 
             return game
     })
 
+    if(config.type === 'fit') {
+        evaluateFitness(config, games, expectedTotal)
+    } else if(config.type === 'calc') {
+        determineMinBag(games, expectedTotal)
+    }
+}
+
+function determineMinBag(games: Game[], expectedTotal: number) {
     const possibleGames = games.map(g => {
-        g.impossible = g.sets.some(x => x.blue > bag.blue  || x.red > bag.red || x.green > bag.green)
-        self.postMessage({type: 'eval', game: g } as GameEvalResult)
+        g.minBag = g.sets.reduce((prev, g) => {
+            return {
+                red: Math.max(g.red, prev.red),
+                green: Math.max(g.green, prev.green),
+                blue: Math.max(g.blue, prev.blue)
+            } as CubeSet
+        }, g.minBag)
+        self.postMessage({ type: 'eval', game: g } as GameEvalResult)
 
         return g
     })
-    .filter(g => !g.impossible)
 
-    const sum = possibleGames.reduce((prev, g) => prev + g.gameId , 0)
-    self.postMessage({type: 'end', sum, isExpected: sum === expectedSum } as EndResult)
+    const total = possibleGames.reduce((prev, g) => {
+        const { red, green, blue } = g.minBag
+        return prev + (red * green * blue)
+    }, 0)
+    self.postMessage({ type: 'end', total, isExpected: total === expectedTotal } as EndResult)
+}
+
+function evaluateFitness(calcType: FitBag, games: Game[], expectedTotal: number) {
+    const bag = calcType.bag
+    const possibleGames = games.map(g => {
+        g.impossible = g.sets.some(x => x.blue > bag.blue || x.red > bag.red || x.green > bag.green)
+
+        self.postMessage({ type: 'eval', game: g } as GameEvalResult)
+
+        return g
+    })
+        .filter(g => !g.impossible)
+
+    const total = possibleGames.reduce((prev, g) => prev + g.gameId, 0)
+    self.postMessage({ type: 'end', total, isExpected: total === expectedTotal } as EndResult)
 }

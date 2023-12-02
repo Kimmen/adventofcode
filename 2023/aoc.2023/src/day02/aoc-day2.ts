@@ -1,14 +1,13 @@
 import { LitElement, css, html } from 'lit'
 import { customElement, state } from 'lit/decorators.js'
-import {repeat} from 'lit/directives/repeat.js';
+import { repeat } from 'lit/directives/repeat.js';
 import devData from './input.dev'
-import devData2 from './input.dev.two'
 import data from './input'
 
-import {button} from '../styles'
+import { button } from '../styles'
 
 import MyWorker from './worker?worker'
-import {Bag, Game, CubeSet, GameResult, Result, GameEvalResult, EndResult } from './worker'
+import { Input, Game, GameResult, Result, GameEvalResult, EndResult, CubeSet, FitBag, CalcMinBag } from './worker'
 
 
 
@@ -20,67 +19,91 @@ export class AocDay2 extends LitElement {
         super();
     }
     @state() games: Game[] = []
-    @state() sum: number | null = null 
-    @state() isExpectedSum: boolean = false 
+    @state() total: number | null = null
+    @state() isExpectedTotal: boolean = false
 
     connectedCallback() {
         super.connectedCallback();
 
-        this.worker.onmessage = ({data}: MessageEvent<Result>) => {
-            
-            switch(data.type) {
-                case 'game' : 
+        this.worker.onmessage = ({ data }: MessageEvent<Result>) => {
+
+            switch (data.type) {
+                case 'game':
                     const gr = data as GameResult
                     this.games.push(gr.game)
                     break
-                case 'eval': 
+                case 'eval':
                     const er = data as GameEvalResult
                     const game = this.games.find(g => g.gameId == er.game.gameId)
-                    if(game) {
+                    if (game) {
                         game.impossible = er.game.impossible
                     }
                     break
 
-                case 'end': 
+                case 'end':
                     const end = data as EndResult
-                    this.sum = end.sum
-                    this.isExpectedSum = end.isExpected
+                    this.total = end.total
+                    this.isExpectedTotal = end.isExpected
                     break
             }
-            
+
             this.requestUpdate()
-         };
+        };
     }
 
     startPart1Dev() {
-       this.games = []
-       this.sum = 0
-       this.isExpectedSum = false
-        this.worker.postMessage({ input: devData, bag: { red: 12, green: 13, blue: 14 } as Bag, expectedSum: 8 })
+        this.games = []
+        this.total = 0
+        this.isExpectedTotal = false
+        this.worker.postMessage({
+            data: devData,
+            expectedTotal: 8,
+            config: {
+                type: 'fit',
+                bag: { red: 12, green: 13, blue: 14 }
+            } as FitBag
+        } as Input)
     }
 
     startPart1() {
         this.games = []
-        this.sum = 0
-       this.isExpectedSum = false
-
-       this.worker.postMessage({ input: data, bag: { red: 12, green: 13, blue: 14 } as Bag, expectedSum: 8 })
+        this.total = 0
+        this.isExpectedTotal = false
+        this.worker.postMessage({
+            data: data,
+            expectedTotal: 2416,
+            config: {
+                type: 'fit',
+                bag: { red: 12, green: 13, blue: 14 }
+            } as FitBag
+        } as Input)
     }
 
     startPart2Dev() {
         this.games = []
-        this.sum = 0
-       this.isExpectedSum = false
-
-        this.worker.postMessage({ input: devData })
+        this.total = 0
+        this.isExpectedTotal = false
+        this.worker.postMessage({
+            data: devData,
+            expectedTotal: 2286,
+            config: {
+                type: 'calc'
+            } as CalcMinBag
+        } as Input)
     }
 
     startPart2() {
         this.games = []
-        this.sum = 0
-       this.isExpectedSum = false
+        this.total = 0
+        this.isExpectedTotal = false
 
-        this.worker.postMessage({ input: devData })
+        this.worker.postMessage({
+            data: data,
+            expectedTotal: 63307,
+            config: {
+                type: 'calc'
+            } as CalcMinBag
+        } as Input)
     }
 
     render() {
@@ -89,14 +112,14 @@ export class AocDay2 extends LitElement {
         <div class="input-selection">
             <button @click=${this.startPart1Dev}>Part1.Dev</button>
             <button @click=${this.startPart1}>Part1</button>
-            <button @click=${this.startPart2Dev} disabled>Part2.Dev</button>
-            <button @click=${this.startPart2} disabled>Part2</button>
+            <button @click=${this.startPart2Dev} >Part2.Dev</button>
+            <button @click=${this.startPart2} >Part2</button>
         </div>
-        <section class=${this.isExpectedSum ? 'success' : ''}>
-            IdSum: ${this.sum} ${this.isExpectedSum}
+        <section class=${this.isExpectedTotal ? 'success' : ''}>
+            IdSum: ${this.total}
             </section>
         <section class="games">
-            ${repeat(this.games, (g) => g.gameId, (g, index)=> html`
+            ${repeat(this.games, (g) => g.gameId, (g, index) => html`
                 <div class=${g.impossible ? 'impossible' : ''}>
                     <p>${index}-${g.gameId}</p>
                         ${g.sets.map(s => html`
