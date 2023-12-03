@@ -8,6 +8,9 @@ export type EngineSchematic  = {
     parts: {
         [key: string]: Part
     }
+    gears: {
+        [key: string]: Symbol
+    }
 }
 
 export type Size = { rows: number, columns: number }
@@ -25,7 +28,8 @@ export const parseEngineSchematics = (data: string): EngineSchematic => {
     const engine: EngineSchematic = {
         engineSize: size,
         symbols: {},
-        parts: {}
+        parts: {},
+        gears: {}
     }
 
     lines.forEach((line, row) => {
@@ -67,7 +71,12 @@ const parsePart = (column: number, row: number, line: string, engine: EngineSche
 
 const parseSymbol = (column: number, row: number, line: string, engine: EngineSchematic) : number => {
     const symbol: Symbol = { symbol: line[column],  position: { row: row, column: column  } }
-    engine.symbols[posKey(symbol.position.row, symbol.position.column)] = symbol
+    const key = posKey(symbol.position.row, symbol.position.column)
+    engine.symbols[key] = symbol
+
+    if(symbol.symbol === "*") {
+        engine.gears[key] = symbol
+    }
 
     return ++column
 }

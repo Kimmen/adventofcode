@@ -4,6 +4,7 @@ import './day00/aoc-day0'
 import './day01/aoc-day1'
 import './day02/aoc-day2'
 import './day03/aoc-day'
+import './day04/aoc-day'
 /**
  * An example element.
  *
@@ -19,7 +20,7 @@ export class AocMain extends LitElement {
   docsHint = 'Click on the Vite and Lit logos to learn more'
 
   @state()
-  selectedDay = 3;
+  selectedDay = 4;
 
 
   render() {
@@ -32,6 +33,7 @@ export class AocMain extends LitElement {
         <li><a href="#" @click=${() => this.selectedDay = 1}>Day 1</a></li>
         <li><a href="#" @click=${() => this.selectedDay = 2}>Day 2</a></li>
         <li><a href="#" @click=${() => this.selectedDay = 3}>Day 3</a></li>
+        <li><a href="#" @click=${() => this.selectedDay = 4}>Day 4</a></li>
       </ul>
     </nav>
     <div class="day-container">
@@ -39,6 +41,7 @@ export class AocMain extends LitElement {
       ${this.selectedDay == 1 ? html`<aoc-day-1 ></aoc-day-1>` : nothing }
       ${this.selectedDay == 2 ? html`<aoc-day-2 ></aoc-day-2>` : nothing }
       ${this.selectedDay == 3 ? html`<aoc-day-3 ></aoc-day-3>` : nothing }
+      ${this.selectedDay == 4 ? html`<aoc-day-4 ></aoc-day-4>` : nothing }
     </div>
     `
   }
@@ -66,6 +69,7 @@ export class AocMain extends LitElement {
       text-shadow: 0 0 5px rgba(0,0,0,0.5);
       color: white;
       font-size: 16px;
+      z-index: 1;
     }
     .list {
       list-style-type: none;

@@ -8,7 +8,8 @@ import { delay } from '../helpers';
 
 import devData from './input.dev'
 import data from './input'
-import { determinePerimeter } from './perimeter';
+import { determinePerimeterForPart, determinePerimeterForSymbol } from './perimeter';
+import { classMap } from 'lit/directives/class-map.js';
 
 
 @customElement('aoc-day-3')
@@ -19,7 +20,8 @@ export class AocDay extends LitElement {
     @state() current?: {
         permiter: Pos[];
         key: string,
-        part: Part,
+        pos: Pos,
+        info: string,
         total: number,
         success: boolean
     }
@@ -36,27 +38,29 @@ export class AocDay extends LitElement {
 
     startPart1Dev() {
         this.reset()
-        this.calculatePartNumberSums(devData, 4361)
+        this.calculatePartNumberSums(devData, 4361, 100)
     }
 
     startPart1() {
         this.reset()
-        this.calculatePartNumberSums(data, 537732)
+        this.calculatePartNumberSums(data, 537732, 10)
     }
 
     startPart2Dev() {
         this.reset()
+        this.calculateGearRatio(devData, 467835, 100)
     }
 
     startPart2() {
         this.reset()
+        this.calculateGearRatio(data, 84883664, 10)
     }
 
-    async calculatePartNumberSums(data: string, expectedSum: number) {
+    async calculatePartNumberSums(data: string, expectedSum: number, updateDelay: number) {
         this.schematics = parseEngineSchematics(data)
         await this.updateUi(0)
 
-        this.current = { key: '', part: {} as Part, permiter: [], total: 0, success: false }
+        this.current = { key: '', pos: {} as Pos, info: "", permiter: [], total: 0, success: false }
 
         const symbols = []
         for (let s in this.schematics.symbols) {
@@ -66,18 +70,67 @@ export class AocDay extends LitElement {
         for (let k in this.schematics.parts) {
             const part = this.schematics.parts[k];
             this.current.key = posKey(part.position.row, part.position.column)
-            this.current.part = part
+            this.current.pos = part.position
+            this.current.info = "" + part.number
 
-            this.current.permiter = determinePerimeter(part)
+            this.current.permiter = determinePerimeterForPart(part)
 
             if (symbols.some(({ row, column }) => this.current?.permiter.some(p => p.row === row && p.column === column))) {
                 this.current.total += part.number
             }
 
-            await this.updateUi(10)
+            await this.updateUi(updateDelay)
         }
 
         this.current.success = this.current.total === expectedSum
+        await this.updateUi(0)
+    }
+
+    async calculateGearRatio(data: string, expectedTotal: number, updateDelay: number) {
+        this.schematics = parseEngineSchematics(data)
+        await this.updateUi(0)
+
+        this.current = { key: '', pos: {} as Pos, info: "", permiter: [], total: 0, success: false }
+
+        const parts: {
+            [key: string]: Part
+        } = {}
+
+        for (let s in this.schematics.parts) {
+            const part = this.schematics.parts[s]
+            const row = part.position.row
+
+            for(let w = 0; w < part.width; w++) {
+                const column = part.position.column + w
+                const subKey = posKey(row, column)
+                parts[subKey] = part
+            }
+        }
+
+        for (let k in this.schematics.gears) {
+            const gear = this.schematics.gears[k]
+            const perimeter = determinePerimeterForSymbol(gear)
+            const foundParts = perimeter.reduce((acc, p) => {
+                const checkKey = posKey(p.row, p.column)
+                const part = parts[checkKey]
+                if(!part) return acc
+
+                const partKey = posKey(part.position.row, part.position.column)
+                const foundNewPart = !acc.find(x => posKey(x.position.row, x.position.column) === partKey)
+               
+                return foundNewPart ? [...acc, part] : acc
+            }, [] as Part[])
+
+            this.current.permiter = perimeter
+            this.current.pos = gear.position
+            this.current.total += foundParts.length > 1 
+                ? foundParts.reduce((t, p) => t * p.number, 1)
+                : 0
+
+            await this.updateUi(updateDelay)
+        }
+
+        this.current.success = this.current.total === expectedTotal
         await this.updateUi(0)
     }
 
@@ -94,16 +147,16 @@ export class AocDay extends LitElement {
         <div class="input-selection">
             <button @click=${this.startPart1Dev}>Part1.Dev</button>
             <button @click=${this.startPart1}>Part1</button>
-            <button @click=${this.startPart2Dev} disabled>Part2.Dev</button>
-            <button @click=${this.startPart2} disabled>Part2</button>
+            <button @click=${this.startPart2Dev} >Part2.Dev</button>
+            <button @click=${this.startPart2} >Part2</button>
         </div>
         <section class="schematics">
           ${this.renderGrid()}
         </section>
         <section class="info">
             <p class=${this.current?.success ? 'success' : ''}>${this.current?.total}</p>
-            <p>${this.current?.part.number}</p>
-            <p>${this.current?.part.position.row} ${this.current?.part.position.column}</p>
+            <p>${this.current?.info}</p>
+            <p>${this.current?.pos.row} ${this.current?.pos.column}</p>
         </section>
         `
     }
@@ -121,18 +174,19 @@ export class AocDay extends LitElement {
                 const part = this.schematics.parts[key]
                 const symbol = this.schematics.symbols[key]
 
-                const isInPerimeter = this.current?.permiter.some(p => p.row === row && p.column === column)
+                let isInPerimeter = this.current?.permiter.some(p => p.row === row && p.column === column)!
+                const isCurrentPart = this.current?.key == key
 
                 if (part) {
-                    const isCurrentPart = this.current?.key == key
-
                     for (let w = 0; w < part.width; w++) {
+                        const pColumn = column + w
+                        isInPerimeter = this.current?.permiter.some(p => p.row === row && p.column === pColumn)!
                         cells.push({
                             key: posKey(row, column + w),
                             row: row,
                             column: column + w,
                             content: `${part.number}`[w],
-                            class: isCurrentPart ? "part current" : "part"
+                            classMap: {part: true, current: isCurrentPart, inPerimeter: isInPerimeter }
                         })
                     }
                     column += part.width - 1
@@ -140,19 +194,19 @@ export class AocDay extends LitElement {
                 else if (symbol) {
                     cells.push({
                         key: key,
-                        row: column,
-                        column: row,
+                        row: row,
+                        column: column,
                         content: symbol.symbol,
-                        class: isInPerimeter ? "symbol in-perimeter" : "symbol"
+                        classMap: {symbol: true, current: isCurrentPart, inPerimeter: isInPerimeter }
                     })
                 }
                 else {
                     cells.push({
                         key: key,
-                        row: column,
-                        column: row,
+                        row: row,
+                        column: column,
                         content: ".",
-                        class: isInPerimeter ? "empty in-perimeter" : "empty"
+                        classMap: {empty: true, current: isCurrentPart, inPerimeter: isInPerimeter }
                     })
                 }
 
@@ -163,9 +217,9 @@ export class AocDay extends LitElement {
             <div>
                 ${repeat(cells, (c) => c.key, (c) => {
             return html`
-                        <span class=${c.class}>
-                                ${c.content}
-                        </span>`})}
+                <span class=${classMap(c.classMap as any)}>
+                        ${c.content}
+                </span>`})}
             </div>
         `
     }
@@ -214,11 +268,11 @@ export class AocDay extends LitElement {
             color: var(--green);
         }
 
-        section.schematics span.in-perimeter {
+        section.schematics span.inPerimeter {
             color: var(--yellow);
         }
 
-        section.schematics span.in-perimeter.symbol {
+        section.schematics span.inPerimeter.symbol {
             color: var(--blue);
         }
         
