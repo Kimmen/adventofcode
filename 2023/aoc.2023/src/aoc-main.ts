@@ -3,6 +3,7 @@ import { customElement, property, state } from 'lit/decorators.js'
 import './day00/aoc-day0'
 import './day01/aoc-day1'
 import './day02/aoc-day2'
+import './day03/aoc-day'
 /**
  * An example element.
  *
@@ -18,7 +19,7 @@ export class AocMain extends LitElement {
   docsHint = 'Click on the Vite and Lit logos to learn more'
 
   @state()
-  selectedDay = 2;
+  selectedDay = 3;
 
 
   render() {
@@ -30,12 +31,14 @@ export class AocMain extends LitElement {
         <li><a href="#" @click=${() => this.selectedDay = 0}>Day 0</a></li>
         <li><a href="#" @click=${() => this.selectedDay = 1}>Day 1</a></li>
         <li><a href="#" @click=${() => this.selectedDay = 2}>Day 2</a></li>
+        <li><a href="#" @click=${() => this.selectedDay = 3}>Day 3</a></li>
       </ul>
     </nav>
     <div class="day-container">
       ${this.selectedDay == 0 ? html`<aoc-day-0 ></aoc-day-0>` : nothing }
       ${this.selectedDay == 1 ? html`<aoc-day-1 ></aoc-day-1>` : nothing }
       ${this.selectedDay == 2 ? html`<aoc-day-2 ></aoc-day-2>` : nothing }
+      ${this.selectedDay == 3 ? html`<aoc-day-3 ></aoc-day-3>` : nothing }
     </div>
     `
   }
