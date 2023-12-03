@@ -1,6 +1,6 @@
-import { Part, Pos } from "./parser"
+import { Part, Pos, Symbol } from "./parser"
 
-export const determinePerimeter = (part: Part): Pos[] => {
+export const determinePerimeterForPart = (part: Part): Pos[] => {
     let perimeter: Pos[] = [];
 
     const rowOver = part.position.row - 1
@@ -19,4 +19,13 @@ export const determinePerimeter = (part: Part): Pos[] => {
     return [...perimeter, 
         { row: rowCurr, column: part.position.column - 1 } as Pos, 
         { row: rowCurr, column: part.position.column + part.width } as Pos];
+}
+
+export const determinePerimeterForSymbol = (symbol: Symbol): Pos[] => {
+    const { row, column } =  symbol.position
+    return [ 
+        { row: row - 1, column: column - 1 }, { row: row - 1, column: column }, { row: row - 1, column: column + 1 },
+        { row: row, column: column - 1 }, { row: row, column: column + 1 },
+        { row: row + 1, column: column - 1 }, { row: row + 1, column: column }, { row: row + 1, column: column + 1 }
+     ]
 }
