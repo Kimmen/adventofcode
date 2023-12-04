@@ -86,7 +86,6 @@ export class AocDay extends LitElement {
             const card = this.scratchCards[i]
             card.matchings = card.lottery.filter(n => card.winnings.includes(n))
             
-            
             for(let m = 1; m <= card.matchings.length && (m+i) < this.scratchCards.length; m++) {
                 this.scratchCards[m+i].metric!+= card.metric!
             }
@@ -108,6 +107,10 @@ export class AocDay extends LitElement {
             <button @click=${this.startPart2Dev} >Part2.Dev</button>
             <button @click=${this.startPart2} >Part2</button>
         </div>
+        <section class="info">
+            <p class=${this.current?.success ? 'success' : ''}>${this.current?.total}</p>
+            <p>${this.current?.info}</p>
+        </section>
         <section class="scratch-cards">
             ${repeat(this.scratchCards, (c) => c.id, (c) => html`
                 <div class="card">
@@ -117,10 +120,6 @@ export class AocDay extends LitElement {
                     <span class="points">${c.metric}</span>
                 </div>
             `)}
-        </section>
-        <section class="info">
-            <p class=${this.current?.success ? 'success' : ''}>${this.current?.total}</p>
-            <p>${this.current?.info}</p>
         </section>
         `
     }
@@ -185,6 +184,7 @@ export class AocDay extends LitElement {
         section.info {
             outline: 1px dashed white;
             margin-top: var(--top-spacing);
+            margin-bottom: var(--top-spacing);
             padding: 1rem;
         }
 
