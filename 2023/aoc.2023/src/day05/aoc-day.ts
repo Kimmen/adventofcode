@@ -3,7 +3,7 @@ import { customElement, state } from 'lit/decorators.js'
 import { repeat } from 'lit/directives/repeat.js';
 import { classMap } from 'lit/directives/class-map.js';
 
-import { } from './parser';
+import { Almanac, parseAlmanac } from './parser';
 import { button } from '../styles'
 import { delay } from '../helpers';
 
@@ -15,10 +15,11 @@ import data from './input'
 export class AocDay extends LitElement {
     constructor() { super(); }
 
-
+    @state() almanac?: Almanac
     @state() current?: {
-        info: string,
-        total: number,
+        currentSeed?: number
+        info: string
+        total: number
         success: boolean
     }
 
@@ -33,6 +34,7 @@ export class AocDay extends LitElement {
 
     startPart1Dev() {
         this.reset()
+        this.determineLowestLocationNumber(devData, 35, 100)
     }
 
     startPart1() {
@@ -47,9 +49,26 @@ export class AocDay extends LitElement {
         this.reset()
     }
 
+    async determineLowestLocationNumber(data: string, expectedTotal: number, uiDelay: number) {
+        this.current = {
+            currentSeed: 0,
+            info: '0',
+            total: 0,
+            success: false,
+        }
+        this.almanac = parseAlmanac(data)
+        await this.updateUi(0)
+
+        for(let i=0; i<this.almanac.seeds.length; i++) {
+            this.current!.currentSeed = this.almanac.seeds[i]
+            this.current!.info = "" + this.almanac.seeds[i]
+            await this.updateUi(uiDelay)
+        }
+    }
+
     render() {
         return html`
-        <h1>Day4</h1
+        <h1>Day5</h1
 
         <div class="input-selection">
             <button @click=${this.startPart1Dev}>Part1.Dev</button>
@@ -62,7 +81,9 @@ export class AocDay extends LitElement {
             <p>${this.current?.info}</p>
         </section>
         <section class="almanac">
-            
+            <div class="seeds">${this.almanac?.seeds.map(s => html`
+                <span class=${this.current?.currentSeed === s ? "seed current" : "seed"}>${s}</span>`)}
+            </div>
         </section>
         `
     }
@@ -84,6 +105,15 @@ export class AocDay extends LitElement {
             display: flex;
             place-items: start;
             gap: 1rem;
+        }
+
+        section.almanac div.seeds {
+            display: flex;
+            gap: 1rem;
+        }
+
+        section.almanac span.seed.current {
+            font-weight: bold;
         }
 
         section.info {

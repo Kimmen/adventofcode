@@ -1,4 +1,4 @@
-import { readLines } from "../helpers"
+import { chunkBy, readLines } from "../helpers"
 
 export type Seed = number
 export type Soil = number
@@ -34,8 +34,47 @@ export const parseAlmanac = (data: string): Almanac => {
         humidityToLocation: createMapFunction<Humidity, Location>([]),
     }
 
-    //TODO: parse lines
+    chunkBy(lines, l => !l.trim()).forEach(chunk => {
+        const line = chunk[0]
+        if(line.startsWith("seeds:")) {
+            result.seeds = line.split(':')[1].trim().split(' ').map(n => Number(n))
+        }
+        else if(line.startsWith("seed-to-soil map:")) {
+            result.seedToSoil = parseMapper<Seed, Soil>(chunk)
+        }
+        else if(line.startsWith("soil-to-fertilizer map:")) {
+            result.soilToFertilizer = parseMapper<Soil, Fertilizer>(chunk)
+        }
+        else if(line.startsWith("fertilizer-to-water map:")) {
+            result.fertilizerToWater = parseMapper<Fertilizer, Water>(chunk)
+        }
+        else if(line.startsWith("water-to-light map:")) {
+            result.waterToLight = parseMapper<Water, Light>(chunk)
+        }
+        else if(line.startsWith("light-to-temperature map:")) {
+            result.lightToTemperature = parseMapper<Light, Temperature>(chunk)
+        }
+        else if(line.startsWith("temperature-to-humidity map:")) {
+            result.temperatureToHumidity = parseMapper<Temperature, Humidity>(chunk)
+        }
+        else if(line.startsWith("humidity-to-location map:")) {
+            result.humidityToLocation = parseMapper<Humidity, Location>(chunk)
+        }
+        else{
+            throw new Error("Unmapped chunk")
+        }
+    })
     return result
+}
+
+const parseMapper = <TSource extends number, TDestination extends number>(chunk: string[]): (source: TSource) => TDestination => {
+    chunk.shift()
+    const mapDefs = chunk.map(l => {
+        const numbers = l.split(' ').map(n => Number(n))
+        return { destination: numbers[0], source: numbers[1], length: numbers[2] } as MapDef
+    })
+
+    return createMapFunction<TSource, TDestination>(mapDefs)
 }
 
 type MapDef = { destination: number, source: number, length: number }
