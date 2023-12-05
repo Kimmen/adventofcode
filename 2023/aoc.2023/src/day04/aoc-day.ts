@@ -11,7 +11,7 @@ import data from './input'
 import { classMap } from 'lit/directives/class-map.js';
 
 type CardViewModel = Card & {
-    matchings: nubmer[]
+    matchings: number[]
     metric?: number
 }
 @customElement('aoc-day-4')
