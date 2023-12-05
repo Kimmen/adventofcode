@@ -17,9 +17,10 @@ export class AocDay extends LitElement {
 
     @state() almanac?: Almanac
     @state() current?: {
-        currentSeed?: number
+        currentSeed: number
+        mappings: number[]
         info: string
-        total: number
+        total?: number
         success: boolean
     }
 
@@ -39,31 +40,106 @@ export class AocDay extends LitElement {
 
     startPart1() {
         this.reset()
+        this.determineLowestLocationNumber(data, 35, 10)
     }
 
     startPart2Dev() {
         this.reset()
+        this.determineLowestLocationNumberBySeedRange(devData, 46, 100)
     }
 
     startPart2() {
         this.reset()
+        this.determineLowestLocationNumberBySeedRange(data, 46, 100)
     }
 
     async determineLowestLocationNumber(data: string, expectedTotal: number, uiDelay: number) {
         this.current = {
             currentSeed: 0,
+            mappings: [],
             info: '0',
-            total: 0,
             success: false,
         }
         this.almanac = parseAlmanac(data)
         await this.updateUi(0)
 
         for(let i=0; i<this.almanac.seeds.length; i++) {
+            this.current.mappings = []
             this.current!.currentSeed = this.almanac.seeds[i]
             this.current!.info = "" + this.almanac.seeds[i]
             await this.updateUi(uiDelay)
+            
+            let current = this.almanac.seedToSoil(this.current!.currentSeed)
+            this.current.mappings?.push(current)
+            await this.updateUi(uiDelay)
+
+            current = this.almanac.soilToFertilizer(current)
+            this.current.mappings?.push(current)
+            await this.updateUi(uiDelay)
+
+            current = this.almanac.fertilizerToWater(current)
+            this.current.mappings?.push(current)
+            await this.updateUi(uiDelay)
+
+            current = this.almanac.waterToLight(current)
+            this.current.mappings?.push(current)
+            await this.updateUi(uiDelay)
+
+            current = this.almanac.lightToTemperature(current)
+            this.current.mappings?.push(current)
+            await this.updateUi(uiDelay)
+
+            current = this.almanac.temperatureToHumidity(current)
+            this.current.mappings?.push(current)
+            await this.updateUi(uiDelay)
+
+            current = this.almanac.humidityToLocation(current)
+            this.current.mappings?.push(current)
+
+            this.current.total = this.current.total === undefined
+                ? current
+                : Math.min(this.current.total, current)
+            this.current.success = this.current.total === expectedTotal
+            await this.updateUi(uiDelay)
         }
+    }
+
+    async determineLowestLocationNumberBySeedRange(data: string, expectedTotal: number, uiDelay: number) {
+        this.current = {
+            currentSeed: 0,
+            mappings: [],
+            info: '0',
+            success: false,
+        }
+        this.almanac = parseAlmanac(data)
+        await this.updateUi(0)
+
+        for(let i=0; i<this.almanac.seeds.length; i+=2) {
+            this.current.mappings = []
+            this.current!.currentSeed = this.almanac.seeds[i]
+            this.current!.info = "" + this.almanac.seeds[i]
+            await this.updateUi(uiDelay)
+
+            const currentLength = this.almanac.seeds[i+1]
+            
+            for(let j=0; j < currentLength; j++) {
+                let current = this.almanac.seedToSoil(this.current!.currentSeed + j)
+
+                current = this.almanac.soilToFertilizer(current)
+                current = this.almanac.fertilizerToWater(current)
+                current = this.almanac.waterToLight(current)
+                current = this.almanac.lightToTemperature(current)
+                current = this.almanac.temperatureToHumidity(current)
+                current = this.almanac.humidityToLocation(current)
+                
+                this.current.total = this.current.total === undefined
+                    ? current
+                    : Math.min(this.current.total, current)
+            }
+        }
+
+        this.current.success = this.current.total === expectedTotal
+        await this.updateUi(uiDelay)
     }
 
     render() {
@@ -77,13 +153,14 @@ export class AocDay extends LitElement {
             <button @click=${this.startPart2} >Part2</button>
         </div>
         <section class="info">
-            <p class=${this.current?.success ? 'success' : ''}>${this.current?.total}</p>
-            <p>${this.current?.info}</p>
+            <p class=${this.current?.success ? 'success' : ''}>Lowsest: ${this.current?.total}</p>
+            <p>${this.current?.info || 'N/A'}</p>
         </section>
         <section class="almanac">
             <div class="seeds">${this.almanac?.seeds.map(s => html`
                 <span class=${this.current?.currentSeed === s ? "seed current" : "seed"}>${s}</span>`)}
             </div>
+            ${this.current?.mappings?.map(n => html`<div class="mapping">${n}</div>`)}
         </section>
         `
     }

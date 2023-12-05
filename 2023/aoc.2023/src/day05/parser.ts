@@ -83,10 +83,10 @@ const createMapFunction = <TSource extends number, TDestination extends number>(
     return (source: TSource) => {
         const match = map.find(m => source >= m.source && source <= (m.source + m.length))
         if (!match) {
-            throw Error("no match")
+            return (source as unknown) as TDestination
         }
 
-        const index = match.source - source
+        const index = source - match.source
         return (match.destination + index) as TDestination
     }
 } 
