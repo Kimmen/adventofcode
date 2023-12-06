@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@lit/task": "^1.0.0",
+    "apexcharts": "^3.44.2",
     "lit": "^3.0.2"
   },
   "devDependencies": {

@@ -2,7 +2,6 @@ import { LitElement, css, html, nothing } from 'lit'
 import { customElement, state } from 'lit/decorators.js'
 import { repeat } from 'lit/directives/repeat.js';
 import { classMap } from 'lit/directives/class-map.js';
-import 'lit-line'
 
 import { RaceCompetition, parseCompetition } from './parser';
 import { button } from '../styles'
@@ -10,15 +9,16 @@ import { delay } from '../helpers';
 
 import devData from './input.dev'
 import data from './input'
+import ApexCharts from 'apexcharts';
 
 
 @customElement('aoc-day-6')
 export class AocDay extends LitElement {
-    constructor() { super(); }
-
-    @state() competition: RaceCompetition
+    constructor() {  super() }
+    
+    @state() competition?: RaceCompetition
     @state() current?: {
-        time? : number
+        time?: number
         traveled?: number[]
         info: string
         total?: number
@@ -41,6 +41,7 @@ export class AocDay extends LitElement {
 
     startPart1() {
         this.reset()
+        this.getWinningCount(data, 288, 100)
     }
 
     startPart2Dev() {
@@ -55,12 +56,27 @@ export class AocDay extends LitElement {
         this.current = {
             info: '',
             success: false,
-            total: 0
+            total: 1
         }
         this.competition = parseCompetition(data)
         await this.updateUi(0)
 
-        for(let i=0; i<this.competition.times.length; i++) {
+        const chartOptions: ApexCharts.ApexOptions = { 
+            chart: {
+                type: 'line'
+            },
+            series: [{
+                data: []
+            }],
+            xaxis: {
+                categories: []
+            }
+        };
+
+        const chart = new ApexCharts(this.renderRoot.querySelector("#chart"), chartOptions);
+        chart.render();
+
+        for (let i = 0; i < this.competition.times.length; i++) {
             const time = this.competition.times[i]
             const distance = this.competition.distances[i]
             this.current.traveled = []
@@ -68,16 +84,27 @@ export class AocDay extends LitElement {
 
             this.current.time = time
 
-            await this.updateUi(400)
+            await this.updateUi(uiDelay)
+            chartOptions.xaxis = { categories: Array(time).fill(0).map((_, index) => index ) }
+            chart.updateOptions(chartOptions)
 
-            for(let w = 0; w <= time; w++) {
+            const racePoints: number[] = []
+            for (let w = 0; w <= time; w++) {
                 const travel = w * (time - w)
-                this.current.traveled.push(travel)
+                racePoints.push(travel)
+                chart.updateSeries([{ data: racePoints}], true)
 
                 winCount += travel > distance ? 1 : 0
+                this.current.info = "" + winCount;
+                await this.updateUi(10)
             }
 
+            this.current.total! *= winCount
+            await this.updateUi(uiDelay)
         }
+
+        this.current.success = expectedTotal === this.current.total
+        await this.updateUi(0)
     }
 
     render() {
@@ -96,13 +123,14 @@ export class AocDay extends LitElement {
         </section>
         <section class="competition">
             <div class="times"><span class="label">Time:</span>${this.competition && this.competition.times.map(n => html`
-                <span class=${this.current.time === n ? "ms current" : "ms"}>${n}</span>
+                <span class=${this.current?.time === n ? "ms current" : "ms"}>${n}</span>
             `)}</div>
             <div class="distances"><span class="label">Distance:</span>${this.competition && this.competition.distances.map(n => html`
                 <span class="mm">${n}</span>
             `)}</div>
+
+            <div id="chart" />
         </section>
-        <lit-line id="chart"></lit-line>
         `
     }
 
