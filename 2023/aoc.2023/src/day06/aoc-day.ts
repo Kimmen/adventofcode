@@ -36,45 +36,40 @@ export class AocDay extends LitElement {
 
     startPart1Dev() {
         this.reset()
-        this.getWinningCount(devData, 288, 100)
+        this.getWinningCount(devData,r => r, 288, 100)
     }
 
     startPart1() {
         this.reset()
-        this.getWinningCount(data, 288, 100)
+        this.getWinningCount(data, r => r, 1083852, 10)
     }
 
     startPart2Dev() {
         this.reset()
+        this.getWinningCount(devData, this.aggregateRaces, 71503, 100)
     }
 
     startPart2() {
         this.reset()
+        this.getWinningCount(data, this.aggregateRaces, 1083852, 10)
     }
 
-    async getWinningCount(data: string, expectedTotal: number, uiDelay: number) {
+    aggregateRaces(r: RaceCompetition) : RaceCompetition {
+        return {
+            times: [ Number(r.times.reduce((a, n) => `${a}${n}` , ''))],
+            distances: [ Number(r.distances.reduce((a, n) => `${a}${n}` , ''))]
+        }
+    }
+
+    async getWinningCount(data: string, transformParse: (input: RaceCompetition) => RaceCompetition,  expectedTotal: number, uiDelay: number) {
         this.current = {
             info: '',
             success: false,
             total: 1
         }
-        this.competition = parseCompetition(data)
+        this.competition = transformParse(parseCompetition(data))
         await this.updateUi(0)
 
-        const chartOptions: ApexCharts.ApexOptions = { 
-            chart: {
-                type: 'line'
-            },
-            series: [{
-                data: []
-            }],
-            xaxis: {
-                categories: []
-            }
-        };
-
-        const chart = new ApexCharts(this.renderRoot.querySelector("#chart"), chartOptions);
-        chart.render();
 
         for (let i = 0; i < this.competition.times.length; i++) {
             const time = this.competition.times[i]
@@ -85,19 +80,34 @@ export class AocDay extends LitElement {
             this.current.time = time
 
             await this.updateUi(uiDelay)
-            chartOptions.xaxis = { categories: Array(time).fill(0).map((_, index) => index ) }
-            chart.updateOptions(chartOptions)
+           
+            const pickIndex = (range: number[]) => {
+                return range[0] + Math.floor((range[1] - range[0])/2)
+            } 
 
-            const racePoints: number[] = []
-            for (let w = 0; w <= time; w++) {
-                const travel = w * (time - w)
-                racePoints.push(travel)
-                chart.updateSeries([{ data: racePoints}], true)
+            let searchRange = [1, Math.ceil(time / 2)]
+            let done = false
+        
+            do {
+                const w = pickIndex(searchRange)
+                const v = w-1
+                const travelCurr = w * (time - w)
+                const travelAfter = v * (time - v)
 
-                winCount += travel > distance ? 1 : 0
-                this.current.info = "" + winCount;
-                await this.updateUi(10)
-            }
+                if(travelCurr > distance && travelAfter <= distance) {
+                    done = true
+                    winCount = time - (w-1) * 2 - 1
+                }
+                else if(travelCurr < distance) {
+                    searchRange = [w, searchRange[1]]
+                }
+                else {
+                    searchRange = [searchRange[0], w]
+                }
+
+                this.current.info = `${w}: ${travelCurr}`
+                await this.updateUi(uiDelay)
+            } while(!done)
 
             this.current.total! *= winCount
             await this.updateUi(uiDelay)
