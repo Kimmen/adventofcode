@@ -15,7 +15,7 @@ import data from './input'
 export class AocDay extends LitElement {
     constructor() {  super() }
 
-    private mapCanvas: any;
+    private mapCanvas?: CanvasRenderingContext2D;
     
     @state() current?: {
         info: string
@@ -39,7 +39,7 @@ export class AocDay extends LitElement {
 
     startPart1() {
         this.reset()
-        this.traverse(data, 6, 10)
+        this.traverse(data, 6, 1)
     }
 
     startPart2Dev() {
@@ -57,31 +57,52 @@ export class AocDay extends LitElement {
         let stillGoing = true
         let instructionIndex = 0
 
-        let x = 100, y = 100
-        let dir = 1
+        let x = 400, y = 400
+        let directions = [[1, 0], [0, 1], [-1, 0], [0, -1]]
+        let currentDir = 1
+        this.mapCanvas!.clearRect(0, 0, 2000, 2000);
+
+        let color = [67,152,224]
+
+        const visited = new Set<string>
 
         do {
             const instruction = map.instructions[instructionIndex]
             const { left, right } = map.steps.get(current)!
-            current = instruction === "L" ? left : right
+            const next = instruction === "L" ? left : right
             this.current.total!++
-            this.current.info = current
-            stillGoing = current !== "ZZZ"
+            this.current.info = next
+            stillGoing = next !== "ZZZ"
+           
+            const visitNode = current + instructionIndex + next
+            if(visited.has(visitNode)) {
+                this.current.info = "Loop detected: " + visitNode
+                break;
+            } 
+            else {
+                visited.add(visitNode)
+                instructionIndex = (instructionIndex + 1) % map.instructions.length
+                current = next
+            }
 
-            instructionIndex = (instructionIndex + 1) % map.instructions.length
+            currentDir += instruction === "R" ? 1 : -1
+            currentDir = currentDir % directions.length
+            currentDir = currentDir < 0 ?  directions.length - 1 : currentDir
 
-            this.mapCanvas.beginPath();
+            const [xDir, yDir] = directions[currentDir]
 
-            // Define a start Point
-            this.mapCanvas.moveTo(x, y);
-    
-
-            // Define an end Point
-            this.mapCanvas.lineTo(200, 100);
-
-            // Stroke it (Do the Drawing)
-            this.mapCanvas.stroke();
-            await this.updateUi(uiDelay)
+            this.mapCanvas!.beginPath()
+            color[0] = (color[0] + instructionIndex) % 255
+            color[1] = (color[2] + instructionIndex + 2) % 255 
+            color[2] = (color[2] + instructionIndex + 5) % 255
+            this.mapCanvas!.strokeStyle = `rgb(${color[0]}, ${color[1]}, ${color[2]})`
+            this.mapCanvas!.moveTo(x, y)
+            x += xDir * 5
+            y += yDir * 5
+            this.mapCanvas!.lineTo(x, y)
+            this.mapCanvas!.stroke()
+            
+            if((x % 100) < 10) await this.updateUi(uiDelay)
         } while(stillGoing)
         
         this.current.success = this.current.total === expectedTotal
@@ -90,7 +111,7 @@ export class AocDay extends LitElement {
 
     updated(): void {
         const canvas = this.renderRoot.querySelector("#map") as HTMLCanvasElement 
-        this.mapCanvas = canvas.getContext("2d")
+        this.mapCanvas = canvas.getContext("2d")!
     }
 
     render() {
@@ -108,7 +129,7 @@ export class AocDay extends LitElement {
             <p>${this.current?.info || 'N/A'}</p>
         </section>
         <section>
-            <canvas id="map" width="1000" heigh="1000" ></canvas>
+            <canvas id="map" width="2000" height="2000" ></canvas>
         </section>
         `
     }
@@ -124,6 +145,10 @@ export class AocDay extends LitElement {
             --blue: rgb(57, 92, 198);
             --dark: rgb(48,48,48);
             --purple: rgb(113, 57, 198);
+        }
+
+        #map {
+            background-color: var(--white)
         }
         
         section.info {
