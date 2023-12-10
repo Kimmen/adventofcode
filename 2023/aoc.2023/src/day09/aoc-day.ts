@@ -51,10 +51,12 @@ export class AocDay extends LitElement {
 
     startPart2Dev() {
         this.reset()
+        this.part2(devData, 2, 100)
     }
 
     startPart2() {
         this.reset()
+        this.part2(data, 1097, 1)
     }
 
 
@@ -111,7 +113,69 @@ export class AocDay extends LitElement {
 
             const firstHistory = this.current.history[0]
             const entries = firstHistory.entries
-            this.current.total = (this.current.total || 0) + Number(entries[entries.length - 1].value)
+            this.current.total = (this.current.total || 0) + Number(entries[0].value)
+            this.current.progress.step = i + 1
+            await this.updateUi(uiDelay)
+        }
+
+        this.current.success = this.current.total === expectedTotal
+        await this.updateUi(0)
+    }
+
+    async part2(data: string, expectedTotal: number, uiDelay: number) {
+        const sensoryData = parseSensoryData(data)
+
+        this.current = {
+            history: [],
+            info: "",
+            progress: { step: 0, max: sensoryData.histories.length }
+            
+        }
+
+        const nextHistoryProcess = (history: History) : HistoryProcess => {
+            return {
+                entries: [...history.values.map(x => ({ value: x, isNew: false} as Entry))]
+            } 
+        }
+
+        for(let i=0; i<sensoryData.histories.length; i++) {
+            
+            let history = nextHistoryProcess(sensoryData.histories[i])
+            this.current.history = [history]
+
+            do {
+                const next: Entry[] = [] 
+                for(let j=0; j<history.entries.length - 1; j++) {
+                    const c = history.entries[j]
+                    const n = history.entries[j+1]
+                    next.push({ value: n.value - c.value, isNew: false})
+                }
+                history = { entries: next }
+                
+                this.current.history.push(history)
+
+                this.current.info = history.entries.reduce((a, n) => a + n.value + ", ", "")
+                await this.updateUi(uiDelay)
+            } while(history.entries.some(x => x.value != 0))
+
+            const last = this.current.history.length - 1
+            this.current.history[last].entries.unshift({ value: 0, isNew: true})
+
+            for(let j=last-1; j >= 0; j--) {
+                const curr = this.current.history[j]
+                const prev = this.current.history[j+1]
+
+                const last = curr.entries[0]
+                const incr = prev.entries[0]
+                curr.entries.unshift( { value: last.value - incr.value , isNew: true })
+
+                this.current.info = curr.entries.reduce((a, n) => a + n.value + ", ", "")
+                await this.updateUi(uiDelay)
+            }
+
+            const firstHistory = this.current.history[0]
+            const entries = firstHistory.entries
+            this.current.total = (this.current.total || 0) + Number(entries[0].value)
             this.current.progress.step = i + 1
             await this.updateUi(uiDelay)
         }
