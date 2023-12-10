@@ -6,10 +6,23 @@ import { classMap } from 'lit/directives/class-map.js';
 import { parseMap } from './parser';
 import { button } from '../styles'
 import { delay, chunkWhile } from '../helpers';
+import { lcm } from './calculator'
 
 import devData from './input.dev'
+import devData2 from './input.dev.2'
 import data from './input'
 
+type Path = {
+    rendering: DirectionRending
+    current: string
+    stepsToZ: number
+}
+type DirectionRending = {
+    directions: number[][]
+    color: number[]
+    currentDir: number
+    pos: number[]
+}
 
 @customElement('aoc-day-8')
 export class AocDay extends LitElement {
@@ -44,10 +57,12 @@ export class AocDay extends LitElement {
 
     startPart2Dev() {
         this.reset()
+        this.traverse2(devData2, 6, 500)
     }
 
     startPart2() {
         this.reset()
+        this.traverse2(data, 6, 1)
     }
 
     async traverse(data: string, expectedTotal: number, uiDelay: number) {
@@ -57,12 +72,14 @@ export class AocDay extends LitElement {
         let stillGoing = true
         let instructionIndex = 0
 
-        let x = 400, y = 400
-        let directions = [[1, 0], [0, 1], [-1, 0], [0, -1]]
-        let currentDir = 1
         this.mapCanvas!.clearRect(0, 0, 2000, 2000);
 
-        let color = [67,152,224]
+        const rendering: DirectionRending = {
+            directions: [[1, 0], [0, 1], [-1, 0], [0, -1]],
+            color: [67,152,224],
+            currentDir: 1,
+            pos: [400, 400]
+        }
 
         const visited = new Set<string>
 
@@ -75,39 +92,105 @@ export class AocDay extends LitElement {
             stillGoing = next !== "ZZZ"
            
             const visitNode = current + instructionIndex + next
-            if(visited.has(visitNode)) {
-                this.current.info = "Loop detected: " + visitNode
-                break;
-            } 
-            else {
-                visited.add(visitNode)
-                instructionIndex = (instructionIndex + 1) % map.instructions.length
-                current = next
-            }
-
-            currentDir += instruction === "R" ? 1 : -1
-            currentDir = currentDir % directions.length
-            currentDir = currentDir < 0 ?  directions.length - 1 : currentDir
-
-            const [xDir, yDir] = directions[currentDir]
-
-            this.mapCanvas!.beginPath()
-            color[0] = (color[0] + instructionIndex) % 255
-            color[1] = (color[2] + instructionIndex + 2) % 255 
-            color[2] = (color[2] + instructionIndex + 5) % 255
-            this.mapCanvas!.strokeStyle = `rgb(${color[0]}, ${color[1]}, ${color[2]})`
-            this.mapCanvas!.moveTo(x, y)
-            x += xDir * 5
-            y += yDir * 5
-            this.mapCanvas!.lineTo(x, y)
-            this.mapCanvas!.stroke()
-            
-            if((x % 100) < 10) await this.updateUi(uiDelay)
+           
+            visited.add(visitNode)
+            instructionIndex = (instructionIndex + 1) % map.instructions.length
+            current = next
+        
+            this.renderDirection(rendering, instruction, instructionIndex)
+            if((rendering.pos[0] % 100) < 10) await this.updateUi(uiDelay)
         } while(stillGoing)
         
         this.current.success = this.current.total === expectedTotal
         await this.updateUi(0)
     }
+
+    async traverse2(data: string, expectedTotal: number, uiDelay: number) {
+        const map = parseMap(data)
+        this.current = { info: "", total: 0, success: false}
+
+        let stillGoing = true
+        let instructionIndex = 0
+
+        this.mapCanvas!.clearRect(0, 0, 2000, 2000);
+
+        const paths: Path[] = Array
+            .from(map.steps.keys())
+            .filter(x => x[2] === "A")
+            .map((x, index) => ({
+                current: x, 
+                stepsToZ: 0,
+                rendering: {
+                    directions: [[1, 0], [0, 1], [-1, 0], [0, -1]],
+                    color: [67,152,224],
+                    currentDir: index % 4,
+                    pos: [400, 400]
+                }
+            } as Path))
+
+        let steps = 1;
+        do {
+            const instruction = map.instructions[instructionIndex]
+            this.current.info = ""
+
+            paths.forEach(p => {
+                if(p.stepsToZ > 0) {
+                    return;
+                }
+
+                const { left, right } = map.steps.get(p.current)!
+                const next = instruction === "L" ? left : right
+
+                p.current = next
+                this.renderDirection(p.rendering, instruction, instructionIndex)
+                this.current!.info += " " + next
+
+                if(p.current[2] === "Z") {
+                    p.stepsToZ = steps
+                }
+            })
+
+            stillGoing = paths.some(p => p.stepsToZ === 0)
+            instructionIndex = (instructionIndex + 1) % map.instructions.length
+    
+            if((steps % 100) < 2) 
+                await this.updateUi(uiDelay)
+
+            steps++
+        } while(stillGoing)
+
+        this.current!.info = paths.reduce((o, p) => o + p.stepsToZ + ",", "")
+        this.current.total = lcm(paths.map(x => x.stepsToZ))
+        this.current.success = this.current.total === expectedTotal
+        await this.updateUi(0)
+    }
+
+
+    renderDirection(rendering: DirectionRending, instruction: string, colorSalt: number) {
+        let {directions, color, currentDir, pos} = rendering
+        currentDir += instruction === "R" ? 1 : -1;
+        currentDir = currentDir % directions.length;
+        currentDir = currentDir < 0 ? directions.length - 1 : currentDir;
+
+        const [xDir, yDir] = directions[currentDir];
+        let [x, y] = pos
+
+        this.mapCanvas!.beginPath();
+        color[0] = (color[0] + colorSalt) % 255;
+        color[1] = (color[2] + colorSalt + 2) % 255;
+        color[2] = (color[2] + colorSalt + 5) % 255;
+        this.mapCanvas!.strokeStyle = `rgb(${color[0]}, ${color[1]}, ${color[2]})`;
+        this.mapCanvas!.moveTo(x, y);
+        x += xDir * 5;
+        y += yDir * 5;
+        this.mapCanvas!.lineTo(x, y);
+        this.mapCanvas!.stroke();
+        
+        rendering.color = color
+        rendering.currentDir = currentDir
+        rendering.pos = [x, y]
+    }
+
 
     updated(): void {
         const canvas = this.renderRoot.querySelector("#map") as HTMLCanvasElement 
