@@ -4,9 +4,10 @@ import { button } from '../styles'
 import { delay } from '../helpers';
 
 import devData from './input.dev'
+import devData2 from './input.dev.2'
 import data from './input'
 
-import { Pipe, PipeData, SouthEast, Vertical, parsePipes } from './parser';
+import { Horizontal, NorthEast, NorthWest, Pipe, PipeData, Pos, SouthEast, SouthWest, Vertical, parsePipes } from './parser';
 import { classMap } from 'lit/directives/class-map.js';
 
 @customElement('aoc-day-10')
@@ -35,12 +36,12 @@ export class AocDay extends LitElement {
 
     startPart1Dev() {
         this.reset()
-        this.part1(devData, 114, 100, new SouthEast())
+        this.part1(devData2, 8, 100, new SouthEast())
     }
 
     startPart1() {
         this.reset()
-        this.part1(data, 114, 1, new Vertical())
+        this.part1(data, 6717, 0, new Vertical())
     }
 
     startPart2Dev() {
@@ -69,8 +70,71 @@ export class AocDay extends LitElement {
             }
         }
 
+        const buildKey = ([row, col]: Pos) => `${row.toString().padStart(4, "0")}${col.toString().padStart(4, "0")}` 
+        const pipes = this.current.schematics.pipes
+        const pos: Pos = this.current.schematics.start
+        const visited = new Set<string>([buildKey(pos)])
+
+        const walkers = [
+            {steps: 0, next: this.getAdjecantPipes(pos, pipes)[0]}, 
+            {steps: 0, next: this.getAdjecantPipes(pos, pipes)[1]}
+        ]
+
+        while(walkers.some(({next}) => !visited.has(buildKey(next)))) {
+            for(let i=0; i<walkers.length; i++) {
+                const walker = walkers[i]
+                const kn = buildKey(walker.next)
+                if(visited.has(kn)) continue
+                
+                visited.add(kn)
+                walker.steps++
+                this.drawStep(walker)
+
+                const [p1, p2] = this.getAdjecantPipes(walker.next, pipes)
+                const k1 = buildKey(p1)
+
+                walker.next = visited.has(k1) ? p2 : p1
+                await this.updateUi(uiDelay)
+            }
+            this.current.info = `${walkers[0].next[0]}, ${walkers[0].next[1]} : ${walkers[1].next[0]}, ${walkers[1].next[1]}`
+            this.current.total = Math.max(walkers[0].steps, walkers[1].steps)
+        }
+        
         this.current.success = this.current.total === expectedTotal
         await this.updateUi(0)
+    }
+
+    drawStep({steps, next}: {steps: number, next: Pos}) {
+        const [row, col] = next
+        const canvas = this.canvas!
+        let x = col * 9
+        let y = row * 9 
+        canvas.fillStyle = 'rgba(113, 57, 198, 0.2)'
+        canvas.fillRect(x,y,9,9)
+        // canvas.font="9px Arial"
+        // canvas.fillStyle = 'rgba(48,48,48)'
+        // canvas.fillText("" + steps, x, y+4)
+    }
+
+    getAdjecantPipes(pos: Pos, pipes: Pipe[][]): [p1: Pos, p2: Pos] {
+        const [row, col] = pos
+        const pipe = pipes[row][col]
+
+        if(pipe instanceof Vertical) {
+            return [[row-1, col], [row+1, col]]
+        } else if(pipe instanceof Horizontal) {
+            return [[row, col-1], [row, col+1]]
+        } else if(pipe instanceof NorthEast) {
+            return [[row-1, col], [row, col+1]]
+        } else if(pipe instanceof NorthWest) {
+            return [[row-1, col], [row, col-1]]
+        } else if(pipe instanceof SouthEast) {
+            return [[row+1, col], [row, col+1]]
+        } else if(pipe instanceof SouthWest) {
+            return [[row+1, col], [row, col-1]]
+        } 
+        
+        throw Error("Unhandled pipe")
     }
 
     
