@@ -3,6 +3,8 @@ import { customElement, state } from 'lit/decorators.js'
 import { button } from '../styles'
 import { delay } from '../helpers';
 
+import classifyPoint from 'robust-point-in-polygon'
+
 import devData from './input.dev'
 import devData2 from './input.dev.2'
 import data from './input'
@@ -36,24 +38,26 @@ export class AocDay extends LitElement {
 
     startPart1Dev() {
         this.reset()
-        this.part1(devData2, 8, 100, new SouthEast())
+        this.part1(devData, 8, 100, new SouthEast(), false)
     }
 
     startPart1() {
         this.reset()
-        this.part1(data, 6717, 0, new Vertical())
+        this.part1(data, 6717, 0, new Vertical(), false)
     }
 
     startPart2Dev() {
         this.reset()
+        this.part1(devData2, 8, 10, new SouthEast(), true)
     }
 
     startPart2() {
         this.reset()
+        this.part1(data, 381, 0, new Vertical(), true)
     }
 
 
-    async part1(data: string, expectedTotal: number, uiDelay: number, startPipe: Pipe) {
+    async part1(data: string, expectedTotal: number, uiDelay: number, startPipe: Pipe, findInside: boolean) {
         this.current = {
             schematics: parsePipes(data),
             progress: { step: 0, max: 140 * 140},
@@ -74,46 +78,91 @@ export class AocDay extends LitElement {
         const pipes = this.current.schematics.pipes
         const pos: Pos = this.current.schematics.start
         const visited = new Set<string>([buildKey(pos)])
+        const loopPolygon: [x: number, y:number][] = []
 
-        const walkers = [
-            {steps: 0, next: this.getAdjecantPipes(pos, pipes)[0]}, 
-            {steps: 0, next: this.getAdjecantPipes(pos, pipes)[1]}
-        ]
+        this.drawStep(pos)
 
-        while(walkers.some(({next}) => !visited.has(buildKey(next)))) {
-            for(let i=0; i<walkers.length; i++) {
-                const walker = walkers[i]
-                const kn = buildKey(walker.next)
-                if(visited.has(kn)) continue
-                
-                visited.add(kn)
-                walker.steps++
-                this.drawStep(walker)
+        let steps = 1
+        let pipe = pipes[pos[0]][pos[1]]
+        let points = pipe.getConnectedPoints(pos)
+        let next = this.getAdjecantPipes(pos, pipes)[0]
+        loopPolygon.push(...points)
 
-                const [p1, p2] = this.getAdjecantPipes(walker.next, pipes)
-                const k1 = buildKey(p1)
+        while(!visited.has(buildKey(next))) {
+            const kn = buildKey(next)
+            if(visited.has(kn)) continue
 
-                walker.next = visited.has(k1) ? p2 : p1
+            visited.add(kn)
+            steps++
+            this.drawStep(next)
+
+            const [p1, p2] = this.getAdjecantPipes(next, pipes)
+            const k1 = buildKey(p1)
+
+            next = visited.has(k1) ? p2 : p1
+            points = pipes[next[0]][next[1]].getConnectedPoints(next)
+            const first = points[0]
+            const last = points[points.length - 1]
+            const lastPoint = loopPolygon[loopPolygon.length - 1]
+            this.drawPolygon(first, last)
+
+            if(first[0] != lastPoint[0] || first[1] != lastPoint[1]) {
+                loopPolygon.push(first)
+            }
+            if(last[0] != lastPoint[0] || last[1] != lastPoint[1]) {
+                loopPolygon.push(last)
+            }
+            
+            if(steps % 100 == 0) {
                 await this.updateUi(uiDelay)
             }
-            this.current.info = `${walkers[0].next[0]}, ${walkers[0].next[1]} : ${walkers[1].next[0]}, ${walkers[1].next[1]}`
-            this.current.total = Math.max(walkers[0].steps, walkers[1].steps)
+            
+            this.current.info = `${next[0]}, ${next[1]}`
+            this.current.total = steps / 2
         }
-        
+
+        if(findInside) {
+            this.current.total = 0
+            for(let row = 0; row < this.current.schematics.pipes.length; row++) {
+                const line = this.current.schematics.pipes[row]
+                for(let col=0; col < line.length; col++) {
+                    if(visited.has(buildKey([row, col]))) {
+                        continue
+                    }
+                    let point: [x: number, y: number] = [col * 9 + 4, row * 9 + 4]
+                    
+                    let isInside = classifyPoint(loopPolygon, point) == -1
+                    this.current.total += isInside ? 1 : 0
+                    this.current.info = `${row}, ${col} : ${point[0]}, ${point[1]}`
+    
+                    this.drawStep([row, col],isInside ? 'rgb(64, 191, 96, 0.2)' : 'rgb(48,48,48, 0.2)')
+                    if(this.current.total % 10 == 0) {
+                        await this.updateUi(uiDelay)
+                    }
+                }
+            }
+        }
+
         this.current.success = this.current.total === expectedTotal
         await this.updateUi(0)
     }
 
-    drawStep({steps, next}: {steps: number, next: Pos}) {
-        const [row, col] = next
+    drawStep(pos: Pos, color?: string) {
+        const [row, col] = pos
         const canvas = this.canvas!
         let x = col * 9
         let y = row * 9 
-        canvas.fillStyle = 'rgba(113, 57, 198, 0.2)'
+        canvas.fillStyle = color || 'rgba(113, 57, 198, 0.2)'
         canvas.fillRect(x,y,9,9)
-        // canvas.font="9px Arial"
-        // canvas.fillStyle = 'rgba(48,48,48)'
-        // canvas.fillText("" + steps, x, y+4)
+    }
+
+    drawPolygon([x1, y1]: [x: number, y:number], [x2, y2]: [x: number, y: number]) {
+        const canvas = this.canvas!
+        canvas.beginPath()
+        canvas.moveTo(x1, y1)
+        canvas.lineTo(x2, y2)
+        canvas.fillStyle = 'rgba(57, 92, 198, 0.4)'
+        canvas.stroke()
     }
 
     getAdjecantPipes(pos: Pos, pipes: Pipe[][]): [p1: Pos, p2: Pos] {

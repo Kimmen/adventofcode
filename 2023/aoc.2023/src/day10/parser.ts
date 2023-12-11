@@ -8,20 +8,18 @@ export type PipeData = {
 export type Pos = [row: number, col: number]
 
 export abstract class Pipe {
-    canConnectTo(pipe: Pipe, myPos: Pos, otherPos: Pos) : boolean {
-        const myConnections = this.getConnections(myPos)
-        const otherConnections = pipe.getConnections(otherPos)
-
-        return myConnections.some(p0 => otherConnections.some(p1 => p0[0] === p1[0] && p0[1] === p1[1]))
-    }
-    abstract getConnections(pos: Pos): Pos[]
+    
+    abstract getConnectedPoints(pos: Pos): [x: number, y: number][]
     abstract draw(pos: Pos, canvas: CanvasRenderingContext2D): void;
 }
 
 export class Vertical extends Pipe {
-    getConnections(pos: Pos): Pos[] {
+    getConnectedPoints(pos: Pos): [x: number, y: number][] {
         const [row, col] = pos
-        return [[row - 1, col], [row + 1, col]]
+        let x = col * 9 + 5
+        let y = row * 9 
+
+        return [[x, y], [x, y + 10]]
     }
 
     draw(pos: Pos, canvas: CanvasRenderingContext2D) {
@@ -38,9 +36,12 @@ export class Vertical extends Pipe {
 }
 
 export class Horizontal extends Pipe {
-    getConnections(pos: Pos): Pos[] {
+    getConnectedPoints(pos: Pos): [x: number, y: number][] {
         const [row, col] = pos
-        return [[row, col - 1], [row, col + 1]]
+        let x = col * 9
+        let y = row * 9 + 5 
+
+        return [[x, y], [x + 10, y]]
     }
 
     draw(pos: Pos, canvas: CanvasRenderingContext2D) {
@@ -57,9 +58,12 @@ export class Horizontal extends Pipe {
 }
 
 export class NorthEast extends Pipe {
-    getConnections(pos: Pos): Pos[] {
+    getConnectedPoints(pos: Pos): [x: number, y: number][] {
         const [row, col] = pos
-        return [[row - 1, col], [row, col + 1]]
+        let x = col * 9 + 5
+        let y = row * 9 
+
+        return [[x, y], [x, y + 5], [x + 5, y + 5]]
     }
 
     draw(pos: Pos, canvas: CanvasRenderingContext2D) {
@@ -78,9 +82,12 @@ export class NorthEast extends Pipe {
 }
 
 export class SouthEast extends Pipe {
-    getConnections(pos: Pos): Pos[] {
+    getConnectedPoints(pos: Pos): [x: number, y: number][] {
         const [row, col] = pos
-        return [[row + 1, col], [row, col + 1]]
+        let x = col * 9 + 5
+        let y = row * 9 + 10
+
+        return [[x, y], [x, y - 5], [x + 5, y - 5]]
     }
 
     draw(pos: Pos, canvas: CanvasRenderingContext2D) {
@@ -99,9 +106,12 @@ export class SouthEast extends Pipe {
 }
 
 export class NorthWest extends Pipe {
-    getConnections(pos: Pos): Pos[] {
+    getConnectedPoints(pos: Pos): [x: number, y: number][] {
         const [row, col] = pos
-        return [[row - 1, col], [row, col - 1]]
+        let x = col * 9 + 5
+        let y = row * 9 
+
+        return [[x, y], [x, y + 5], [x - 5, y + 5]]
     }
 
     draw(pos: Pos, canvas: CanvasRenderingContext2D) {
@@ -120,10 +130,12 @@ export class NorthWest extends Pipe {
 }
 
 export class SouthWest extends Pipe {
-    getConnections(pos: Pos): Pos[] {
+    getConnectedPoints(pos: Pos): [x: number, y: number][] {
         const [row, col] = pos
-        return [[row + 1, col], [row, col - 1]]
-        return [[row + 1, col], [row, col - 1]]
+        let x = col * 9 + 5
+        let y = row * 9 + 10
+
+        return [[x, y], [x, y - 5], [x - 5, y - 5]]
     }
 
     draw(pos: Pos, canvas: CanvasRenderingContext2D) {
@@ -142,7 +154,7 @@ export class SouthWest extends Pipe {
 }
 
 export class Ground extends Pipe {
-    getConnections(pos: Pos): Pos[] {
+    getConnectedPoints(): [x: number, y: number][] {
         return []
     }
 

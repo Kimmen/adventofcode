@@ -1,5 +1,5 @@
-export default `.....
-.S-7.
-.|.|.
-.L-J.
-.....`
+export default `..F7.
+.FJ|.
+SJ.L7
+|F--J
+LJ...`
