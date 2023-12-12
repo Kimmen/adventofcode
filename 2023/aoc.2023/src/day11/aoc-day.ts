@@ -35,24 +35,27 @@ export class AocDay extends LitElement {
 
     startPart1Dev() {
         this.reset()
-        this.part1(devData, 374, 100)
+        this.part1(devData, 374, 1, 100)
     }
 
     startPart1() {
         this.reset()
-        this.part1(data, 374, 1)
+        this.part1(data, 9648398, 1, 1)
     }
 
     startPart2Dev() {
         this.reset()
+        // this.part1(devData, 1030, 10 - 1, 100)
+        this.part1(devData, 8410, 100 - 1, 100)
     }
 
     startPart2() {
         this.reset()
+        this.part1(data, 618800410814, 1_000_000 - 1, 1)
     }
 
 
-    async part1(data: string, expectedTotal: number, uiDelay: number) {
+    async part1(data: string, expectedTotal: number, expansionRate: number, uiDelay: number) {
         const map = parseGalaxyMap(data)
         this.current = {
             map,
@@ -70,9 +73,9 @@ export class AocDay extends LitElement {
                 continue
             }
 
-            galaxies.filter(([x]) => x > i).forEach(g => g[0] += 1)
-            width++;
-            i++;
+            galaxies.filter(([x]) => x > i).forEach(g => g[0] += expansionRate)
+            width+= expansionRate
+            i+= expansionRate
         }
 
         for(let i=0; i<height; i++) {
@@ -81,9 +84,9 @@ export class AocDay extends LitElement {
                 continue
             }
 
-            galaxies.filter(([_, y]) => y > i).forEach(g => g[1] += 1)
-            height++;
-            i++;
+            galaxies.filter(([_, y]) => y > i).forEach(g => g[1] += expansionRate)
+            height+= expansionRate
+            i+= expansionRate
         }
 
         this.current.total = 0
@@ -93,7 +96,7 @@ export class AocDay extends LitElement {
             for(let j=i+1; j<map.galaxies.length; j++) {
                 const g2 = map.galaxies[j]
                 const distance = this.manhattanDistance(g1, g2)
-                
+
                 this.current.total += distance
                 this.current.info = `${g1[0]},${g1[1]} -> ${g2[0]},${g2[1]} : ${distance}` 
 
