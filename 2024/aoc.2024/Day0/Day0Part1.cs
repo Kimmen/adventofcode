@@ -1,25 +1,46 @@
 ﻿using Spectre.Console;
 
-namespace AdventOfCode.Tweventyfour.Day0;
+namespace Aoc.Day0;
 
 public class Day0Part1 : IChallenge
 {
+    private string _input = "Aoc.Day0.input.txt";
+    private long? _expectedResult;
+
+    public void UseDevInput()
+    {
+        _input = "Aoc.Day0.input.dev.txt";
+        _expectedResult = 24000L;
+    }
+
     public async Task Run()
     {
         await AnsiConsole.Status()
             .StartAsync("Thinking...", async ctx =>
             {
-                AnsiConsole.MarkupLine("Doing some work...");
-                Thread.Sleep(1000);
+                ctx.Status("Reading file");
+                var caloriesPerInventory = InputReader
+                    .ReadLinesFromResource(_input)
+                    .ChunkBy(string.IsNullOrWhiteSpace);
 
-                // Update the status and spinner
-                ctx.Status("Thinking some more");
-                ctx.Spinner(Spinner.Known.Star);
-                ctx.SpinnerStyle(Style.Parse("green"));
+                Thread.Sleep(500);
+                AnsiConsole.MarkupLine($"Number of inventories: [bold]{caloriesPerInventory.Count()}[/]");
 
-                // Simulate some work
-                AnsiConsole.MarkupLine("Doing some more work...");
-                Thread.Sleep(2000);
+                ctx.Status("Calculeting file");
+                var totalCalories = caloriesPerInventory
+                    .Select(x => x.Select(long.Parse).Sum())
+                    .OrderDescending()
+                    .Take(1)
+                    .Sum();
+
+                Thread.Sleep(500);
+                var color = _expectedResult.HasValue ? "green" : "yellow";
+                if (_expectedResult.HasValue && totalCalories != _expectedResult)
+                {
+                    color = "red";
+                }
+
+                AnsiConsole.MarkupLine($"Total calories: [{color} bold]{totalCalories}[/]");
             });
     }
 }

@@ -1,7 +1,7 @@
 ﻿// See https://aka.ms/new-console-template for more information
 
 using System.Reflection;
-using AdventOfCode.Tweventyfour;
+using Aoc;
 using Spectre.Console;
 
 var challenges = Assembly.GetExecutingAssembly().GetTypes()
@@ -13,12 +13,22 @@ var challenges = Assembly.GetExecutingAssembly().GetTypes()
 // Ask for the user's favorite fruit
 var challenge = AnsiConsole.Prompt(
     new SelectionPrompt<IChallenge>()
-        .Title("Execute which day [green]favorite fruit[/]?")
+        .Title("Select [green]puzzle[/]?")
         .PageSize(10)
         .Mode(SelectionMode.Leaf)
         .AddChoices(challenges)
         .UseConverter(challenge => challenge.GetType().Name));
 
+var inputType = AnsiConsole.Prompt(
+    new SelectionPrompt<string>()
+        .Title("Use which input?")
+        .Mode(SelectionMode.Leaf)
+        .AddChoices(["Dev", "Real"] ));
+
+if(inputType == "Dev")
+{
+    challenge.UseDevInput();
+}
 await challenge.Run();
 
 AnsiConsole.MarkupLine("All done! [green]Have a great day![/]");
