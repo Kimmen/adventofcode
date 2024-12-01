@@ -19,4 +19,14 @@ public static class InputReader
     {
         return value.Split(Environment.NewLine);
     }
+
+    public static IEnumerable<string> StreamLines(string resourceName)
+    {
+        using var stream = typeof(InputReader).Assembly.GetManifestResourceStream(resourceName);
+        using var reader = new StreamReader(stream!);
+        while (!reader.EndOfStream)
+        {
+            yield return reader.ReadLine();
+        }
+    }
 }
