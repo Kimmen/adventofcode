@@ -22,36 +22,31 @@ public class Day2Part2 : IChallenge
         foreach (var line in InputReader.StreamLines(PuzzleInput))
         {
             var report = line.Split(" ").Select(int.Parse).ToArray();
-
             var (index, reason) = DetectError(report);
-            PrintReport(report, index, reason, false);
             var isSafe = index == -1;
-            if (isSafe)
+
+            if (!isSafe)
             {
-                safeReports++;
-                Thread.Sleep(10);
-                continue;
+                PrintReport(report, -1, index, reason, false);
+
+                for (var i = 0; i < report.Length; i++)
+                {
+                    var testReport = i == -1 ? report : report.Where((_, j) => j != i).ToArray();
+                    var (ix, r) = DetectError(testReport);
+                    isSafe = ix == -1;
+
+                    PrintReport(report, i, ix, r, true);
+
+                    if (isSafe)
+                    {
+                        break;
+                    }
+                }
             }
 
-            var adjustment = report.Where((_, i) => i != index).ToArray();
-            var (index1, reason1) = DetectError(adjustment);
-            PrintReport(adjustment, index1, reason1, true);
-            isSafe = index1 == -1;
             if (isSafe)
             {
                 safeReports++;
-                Thread.Sleep(10);
-                continue;
-            }
-
-            var adjustmentPlus = report.Where((_, i) => i != index + 1).ToArray();
-            var (index2, reason2) = DetectError(adjustmentPlus);
-            PrintReport(adjustmentPlus, index2, reason2, true);
-            isSafe = index2 == -1;
-            if (isSafe)
-            {
-                safeReports++;
-                Thread.Sleep(10);
             }
         }
 
@@ -59,15 +54,29 @@ public class Day2Part2 : IChallenge
         PrintResult(safeReports);
     }
 
-    private void PrintReport(int[] report, int errorIndex, string reason, bool indent)
+    private void PrintReport(int[] report, int removedIndex, int errorIndex, string reason, bool indent)
     {
-        var isSafeVisual = errorIndex == -1 ? $"[green]Ok[/]" : $"[red]No[/]";
-        var reportVisual = string.Join(", ", report.Select((x, i) => i == errorIndex ? $"[lightgoldenrod2_2 bold]{x}[/]" : x.ToString()));
+        var isSafeVisual = string.IsNullOrEmpty(reason) ? $"[green]Ok[/]" : $"[red]No[/]";
+        var reportVisual = string.Join(", ", report
+            .Select((x, i) =>
+            {
+                if(i == removedIndex)
+                {
+                    return $"[lightgoldenrod2_2 bold]{x}[/]";
+                }
+
+                if(i == errorIndex)
+                {
+                    return $"[red underline]{x}[/]";
+                }
+
+                return x.ToString();
+            }));
         var indentVisual = indent ? "\t" : string.Empty;
         AnsiConsole.MarkupLine($"{indentVisual}{isSafeVisual} [deepskyblue4_1]<{reportVisual}>[/] {reason}");
     }
 
-    private (int Index, string Reason) DetectError(int[] levels)
+    private static (int Index, string Reason) DetectError(int[] levels)
     {
         var changeRatio = Math.Sign(levels[1] - levels[0]);
 
@@ -86,7 +95,7 @@ public class Day2Part2 : IChallenge
                 _ => (true, string.Empty)
             };
 
-            if(!safe)
+            if (!safe)
             {
                 return (i, reason);
             }
