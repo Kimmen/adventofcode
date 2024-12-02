@@ -13,10 +13,10 @@ public class Day0Part1 : IChallenge
         _expectedResult = 24000L;
     }
 
-    public async Task Run()
+    public void Run()
     {
-        await AnsiConsole.Status()
-            .StartAsync("Thinking...", async ctx =>
+        AnsiConsole.Status()
+            .Start("Thinking...", ctx =>
             {
                 ctx.Status("Reading file");
                 var caloriesPerInventory = InputReader

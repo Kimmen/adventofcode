@@ -29,7 +29,7 @@ if(inputType == "Dev")
 {
     challenge.UseDevInput();
 }
-await challenge.Run();
+challenge.Run();
 
 AnsiConsole.MarkupLine("All done! [green]Have a great day![/]");
 Console.ReadKey();

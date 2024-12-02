@@ -1,6 +1,5 @@
 ﻿namespace Aoc;
 
-
 public static class EnumerableChunkers
 {
     public static IEnumerable<IEnumerable<T>> ChunkBy<T>(this IEnumerable<T> source, Predicate<T> splitPredicate)
