@@ -10,7 +10,7 @@ public class Day2Part1 : IChallenge
     public void UseDevInput()
     {
         _inputExt = "dev.txt";
-        _expectedResult = 11L;
+        _expectedResult = 2L;
     }
 
     private string PuzzleInput => $"{GetType().Namespace}.input.{_inputExt}";
@@ -34,9 +34,9 @@ public class Day2Part1 : IChallenge
                 var unsafes = 0;
                 foreach (var line in InputReader.StreamLines(PuzzleInput))
                 {
-                    var reportValues = line.Split(" ").Select(int.Parse).ToArray();
-                    var isSafe = EvaluateSafeness(reportValues);
-                    reports.Add((reportValues, isSafe));
+                    var report = line.Split(" ").Select(int.Parse).ToArray();
+                    var isSafe = IsSafeReport(report);
+                    reports.Add((report, isSafe));
 
                     safes += isSafe ? 1 : 0;
                     unsafes += isSafe ? 0 : 1;
@@ -53,32 +53,37 @@ public class Day2Part1 : IChallenge
         PrintResult(safeReports);
     }
 
-    private bool EvaluateSafeness(int[] reportValues)
+    private static bool IsSafeReport(int[] report)
     {
-        var changeRatio = Math.Sign(reportValues[1] - reportValues[0]);
+        return DetectError(report) == -1;
 
-        for (var i = 0; i < reportValues.Length - 1; i++)
+        int DetectError(int[] levels)
         {
-           var first = reportValues[i];
-           var second = reportValues[i + 1];
-           var difference = second - first;
-           var distance = Math.Abs(difference);
+            var changeRatio = Math.Sign(levels[1] - levels[0]);
 
-           var safe = difference switch
-           {
-               0 => false,
-               _ when Math.Sign(difference) != changeRatio => false,
-               _ when distance is < 1 or > 3 => false,
-               _ => true
-           };
+            for (var i = 0; i < levels.Length - 1; i++)
+            {
+                var first = levels[i];
+                var second = levels[i + 1];
+                var difference = second - first;
+                var distance = Math.Abs(difference);
 
-           if(!safe)
-           {
-               return false;
-           }
+                var safe = difference switch
+                {
+                    0 => false,
+                    _ when Math.Sign(difference) != changeRatio => false,
+                    _ when distance is < 1 or > 3 => false,
+                    _ => true
+                };
+
+                if(!safe)
+                {
+                    return i;
+                }
+            }
+
+            return -1;
         }
-
-        return true;
     }
 
     private BarChart GenerateBar(int safeCount, int unsafeCount)
