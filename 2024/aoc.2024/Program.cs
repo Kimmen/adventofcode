@@ -32,4 +32,3 @@ if(inputType == "Dev")
 challenge.Run();
 
 AnsiConsole.MarkupLine("All done! [green]Have a great day![/]");
-Console.ReadKey();
