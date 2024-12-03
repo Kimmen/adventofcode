@@ -6,7 +6,7 @@ namespace Aoc.Day3;
 public partial class Day3Part1 : IChallenge
 {
     private string _inputExt = "txt";
-    private long? _expectedResult = null;
+    private long? _expectedResult = 174960292L;
 
     public void UseDevInput()
     {
