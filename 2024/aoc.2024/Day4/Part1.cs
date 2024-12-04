@@ -3,10 +3,10 @@ using Spectre.Console;
 
 namespace Aoc.Day4;
 
-public partial class Part1 : IChallenge
+public class Part1 : IChallenge
 {
     private string _inputExt = "txt";
-    private long? _expectedResult = 174960292L;
+    private long? _expectedResult = 2536L;
 
     public void UseDevInput()
     {
