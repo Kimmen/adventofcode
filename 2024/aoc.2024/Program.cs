@@ -6,7 +6,7 @@ using Spectre.Console;
 
 var challenges = Assembly.GetExecutingAssembly().GetTypes()
     .Where(x => x.GetInterfaces().Any(i => i == typeof(IChallenge)))
-    .Select(x => new { x.Name, Challenge = Activator.CreateInstance(x) as IChallenge })
+    .Select(x => new { Name = x.FullName, Challenge = Activator.CreateInstance(x) as IChallenge })
     .OrderByDescending(x => x.Name)
     .Select(x => x.Challenge!);
 
@@ -17,7 +17,7 @@ var challenge = AnsiConsole.Prompt(
         .PageSize(10)
         .Mode(SelectionMode.Leaf)
         .AddChoices(challenges)
-        .UseConverter(challenge => challenge.GetType().Name));
+        .UseConverter(challenge => challenge.GetType().FullName!));
 
 var inputType = AnsiConsole.Prompt(
     new SelectionPrompt<string>()

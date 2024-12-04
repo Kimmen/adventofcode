@@ -3,7 +3,7 @@ using Spectre.Console;
 
 namespace Aoc.Day3;
 
-public partial class Day3Part2 : IChallenge
+public partial class Part2 : IChallenge
 {
     private string _inputExt = "txt";
     private long? _expectedResult = null;

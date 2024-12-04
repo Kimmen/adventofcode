@@ -1,9 +1,9 @@
 ﻿using System.Text.RegularExpressions;
 using Spectre.Console;
 
-namespace Aoc.Day3;
+namespace Aoc.Day4;
 
-public partial class Day3Part1 : IChallenge
+public partial class Part1 : IChallenge
 {
     private string _inputExt = "txt";
     private long? _expectedResult = 174960292L;

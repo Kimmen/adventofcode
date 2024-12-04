@@ -2,7 +2,7 @@
 
 namespace Aoc.Day2;
 
-public class Day2Part1 : IChallenge
+public class Part1 : IChallenge
 {
     private string _inputExt = "txt";
     private long? _expectedResult = 670L;
