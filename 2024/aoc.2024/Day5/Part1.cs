@@ -26,40 +26,91 @@ public class Part1 : IChallenge
 
         var middleSum = 0L;
 
-        AnsiConsole.Status()
-            .Start("Proccesing page production", ctx =>
+        // Create the layout
+        var layout = new Layout("Root")
+            .SplitColumns(
+                new Layout("Pages"),
+                new Layout("Rules")
+                    .SplitRows(
+                        new Layout("Preceding"),
+                        new Layout("Proceeding")));
+
+        AnsiConsole.Live(layout).Start(ctx =>
+        {
+            foreach (var pages in pageProduction)
             {
-                foreach (var pages in pageProduction)
+                var processed = new Queue<int>();
+                var left = new Queue<int>(pages);
+
+                var productIsValid = false;
+                do
                 {
-                      ctx.Status($"Processing {string.Join(',', pages.Select(x => x.ToString()))}");
-                      Thread.Sleep(10);
-                      var processed = new Queue<int>();
-                      var left = new Queue<int>(pages);
+                    var current = left.Dequeue();
+                    UpdateCurrentPage(layout, pages, current);
+                    UpdatePrecedingRules(layout, current, orderingRules.Precedings);
+                    UpdateProceedingRules(layout, current, orderingRules.Proceedings);
+                    // Thread.Sleep(1);
+                    ctx.Refresh();
 
-                      var productIsValid = false;
-                      do
-                      {
-                          var current = left.Dequeue();
-                          var isCorrectWithPreceding = IsCorrectWithPreceding(current, processed.ToArray(), orderingRules.Precedings);
-                          var isCorrectWithProceedings = IsCorrectWithProceedings(current, left.ToArray(), orderingRules.Proceedings);
-                          processed.Enqueue(current);
+                    var isCorrectWithPreceding = IsCorrectWithPreceding(current, processed.ToArray(), orderingRules.Precedings);
+                    var isCorrectWithProceedings = IsCorrectWithProceedings(current, left.ToArray(), orderingRules.Proceedings);
+                    processed.Enqueue(current);
 
-                          productIsValid = isCorrectWithPreceding && isCorrectWithProceedings;
+                    productIsValid = isCorrectWithPreceding && isCorrectWithProceedings;
 
-                      } while (left.Count != 0 && productIsValid);
+                } while (left.Count != 0 && productIsValid);
 
-                      if (productIsValid)
-                      {
-                          var middle = pages[Convert.ToInt32(Math.Floor(pages.Length / 2.0))];
-                          middleSum += middle;
-                      }
+                if (productIsValid)
+                {
+                    var middle = pages[Convert.ToInt32(Math.Floor(pages.Length / 2.0))];
+                    middleSum += middle;
                 }
-            });
+            }
+        });
 
 
         AnsiConsole.WriteLine();
         AnsiConsole.MarkupLine("Successful page middle sum: ");
         PrintResult(middleSum);
+    }
+
+    private void UpdatePrecedingRules(Layout layout, int current, IDictionary<int, HashSet<int>> orderingRulesProceedings)
+    {
+        var visualPages = orderingRulesProceedings.TryGetValue(current, out var precedings)
+            ? precedings.Select(page => $"[lightslategrey]{page}[/]").ToArray()
+            : ["[grey]None[/]"];
+
+        layout["Rules"]["Preceding"].Update(
+            new Panel(
+                    Align.Center(
+                        new Markup(string.Join(", ", visualPages)),
+                        VerticalAlignment.Middle))
+                .Expand());
+    }
+
+    private void UpdateProceedingRules(Layout layout, int current, IDictionary<int, HashSet<int>> orderingRulesPrecedings)
+    {
+        var visualPages = orderingRulesPrecedings.TryGetValue(current, out var precedings)
+            ? precedings.Select(page => $"[lightslategrey]{page}[/]").ToArray()
+            : ["[grey]None[/]"];
+
+        layout["Rules"]["Proceeding"].Update(
+            new Panel(
+                    Align.Center(
+                        new Markup(string.Join(", ", visualPages)),
+                        VerticalAlignment.Middle))
+                .Expand());
+    }
+
+    private void UpdateCurrentPage(Layout layout, int[] pages, int currentPage)
+    {
+        var visualPages = pages.Select((page) => page == currentPage ? $"[gold3_1]{page}[/]" : page.ToString());
+        layout["Pages"].Update(
+            new Panel(
+                    Align.Center(
+                        new Markup(string.Join(", ", visualPages)),
+                        VerticalAlignment.Middle))
+                .Expand());
     }
 
     private bool IsCorrectWithPreceding(int current, ICollection<int> processed, IDictionary<int, HashSet<int>> orderingRulesPrecedings)
