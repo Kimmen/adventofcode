@@ -17,7 +17,7 @@ var challenge = AnsiConsole.Prompt(
         .PageSize(10)
         .Mode(SelectionMode.Leaf)
         .AddChoices(challenges)
-        .UseConverter(challenge => challenge.GetType().FullName!));
+        .UseConverter(challenge => challenge.GetType().FullName!.Replace("Aoc.", "")));
 
 var inputType = AnsiConsole.Prompt(
     new SelectionPrompt<string>()
