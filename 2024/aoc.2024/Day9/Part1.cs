@@ -7,7 +7,7 @@ public class Part1 : IChallenge
 {
     private string _inputExt = "txt";
 
-    private long? _expectedResult = null;
+    private long? _expectedResult = 6435922584968;
 
     public void UseDevInput()
     {
@@ -90,7 +90,7 @@ public class Part1 : IChallenge
         }
 
         AnsiConsole.WriteLine();
-        AnsiConsole.MarkupLine("Unique anti nodes: ");
+        AnsiConsole.MarkupLine("Checksum: ");
         PrintResult(blocks.Where(n => n > 0).Select((n, i) => (n - 1) * i).Sum());
         return;
 
