@@ -26,7 +26,19 @@ public static class InputReader
         using var reader = new StreamReader(stream!);
         while (!reader.EndOfStream)
         {
-            yield return reader.ReadLine();
+            yield return reader.ReadLine()!;
+        }
+    }
+
+    public static IEnumerable<char> StreamChars(string resourceName)
+    {
+        using var stream = typeof(InputReader).Assembly.GetManifestResourceStream(resourceName);
+        using var reader = new StreamReader(stream!);
+
+        int c;
+        while ((c = reader.Read()) != -1)
+        {
+            yield return (char)c;
         }
     }
 }
