@@ -8,7 +8,12 @@ public class Part2 : IChallenge
 {
     private string _inputExt = "txt";
 
-    private long? _expectedResult = null; //6440697749191 //6440697749191 //8657824158422
+    private long? _expectedResult = null; //6440697749191
+                                          //6440697749191
+                                          //6439319377569
+                                          //8657824158422
+                                          //15986296176501
+                                          //6439319377569
 
     public void UseDevInput()
     {
@@ -25,7 +30,7 @@ public class Part2 : IChallenge
         var isFile = true;
 
         var fileBlocks = new List<(int FileId, int Size, int StartIndex)>();
-        var spaceBlocks = new SortedSet<(int Size, int StartIndex)>();
+        var spaces = Enumerable.Range(0, 10).Select(_ => new SortedSet<int>()).ToList();
 
         var index = 0;
         foreach (var c in chars)
@@ -33,11 +38,6 @@ public class Part2 : IChallenge
             var blockSize = CharToNumber(c);
             try
             {
-                if (blockSize == 0)
-                {
-                    continue;
-                }
-
                 if (isFile)
                 {
                     fileBlocks.Add((fileId, blockSize, index));
@@ -45,7 +45,7 @@ public class Part2 : IChallenge
                 }
                 else
                 {
-                    spaceBlocks.Add((blockSize, index));
+                    spaces[blockSize].Add(index);
                 }
             }
             finally
@@ -55,36 +55,54 @@ public class Part2 : IChallenge
             }
         }
 
-        // AnsiConsole.WriteLine();
 
-        for (var i = fileBlocks.Count - 1; i >= 0; i--)
+        fileBlocks.Sort((a, b) => b.FileId.CompareTo(a.FileId));
+
+        for (var i = 0; i < fileBlocks.Count; i++)
         {
-            var (fId, size, blockIndex) = fileBlocks[i];
+            var (fId, fileSize, fileIndex) = fileBlocks[i];
+            (int SpaceSize, int SpaceIndex) space = default;
 
-            var space = spaceBlocks.FirstOrDefault(block => block.Size >= size);
+            for (var j = fileSize; j < spaces.Count; j++)
+            {
+                var si = spaces[j].FirstOrDefault(x => x < fileIndex);
+                if (si == default)
+                {
+                    continue;
+                }
 
-            if (space == default || blockIndex > space.StartIndex)
+                spaces[j].Remove(si);
+                space = (j, si);
+                break;
+            }
+
+            if (space == default)
             {
                 continue;
             }
 
-            spaceBlocks.Remove(space);
             var (spaceSize, spaceIndex) = space;
-            fileBlocks[i] = (fId, size, spaceIndex);
+            fileBlocks[i] = (fId, fileSize, spaceIndex);
 
-            var remainingSpace = spaceSize - size;
-            if (remainingSpace > 0)
+            if (spaceSize > fileSize)
             {
-                spaceBlocks.Add((remainingSpace, spaceIndex + size));
+                var remainingSpace = spaceSize - fileSize;
+                var remainingSpaceIndex = spaceIndex + fileSize;
+                spaces[remainingSpace].Add(remainingSpaceIndex);
             }
         }
 
+        fileBlocks.Sort((a, b) => a.StartIndex.CompareTo(b.StartIndex));
         var checksum = 0L;
         foreach (var fileBlock in fileBlocks)
         {
             var (fId, size, blockIndex) = fileBlock;
             for (var i = 0; i < size; i++)
             {
+                if (blockIndex == 45983)
+                {
+
+                }
                 checksum += (blockIndex + i) * fId;
             }
         }
