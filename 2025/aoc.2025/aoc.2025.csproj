@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net10.0</TargetFramework>
+        <RootNamespace>Aoc</RootNamespace>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <InvariantGlobalization>true</InvariantGlobalization>
+        <LangVersion>default</LangVersion>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Spectre.Console" Version="0.49.1" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <EmbeddedResource Include="Day1\input.dev.txt" />
+      <EmbeddedResource Include="Day1\input.txt" />
+      <None Remove="Day0\input.dev.txt" />
+    </ItemGroup>
+
+</Project>
