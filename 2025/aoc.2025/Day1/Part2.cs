@@ -1,87 +1,137 @@
-﻿// using System.Collections.Concurrent;
-// using Spectre.Console;
-//
-// namespace Aoc.Day1;
-//
-// public class Part2 : IChallenge
-// {
-//     private string _input = "Aoc.Day1.input.txt";
-//     private long? _expectedResult;
-//
-//     public void UseDevInput()
-//     {
-//         _input = "Aoc.Day1.input.dev.txt";
-//         _expectedResult = 31L;
-//     }
-//
-//     public void Run()
-//     {
-//         var locationTable = new Table
-//         {
-//             Border = TableBorder.MinimalHeavyHead
-//         };
-//
-//         List<int> locationIds = new(1000);
-//         ConcurrentDictionary<int, int> locationOccurrences = new();
-//         List<int> similarityScores = new(1000);
-//
-//         AnsiConsole.Status()
-//             .Start("Reading locations...", _ =>
-//             {
-//                 foreach (var line in InputReader.StreamLines(_input))
-//                 {
-//                     var parsed = line.Split("   ");
-//                     locationIds.Add(int.Parse(parsed[0]));
-//                     locationOccurrences.AddOrUpdate(int.Parse(parsed[1]), 1, (_, occurrences) => occurrences + 1);
-//                     Thread.Sleep(10);
-//                 }
-//             });
-//
-//         Thread.Sleep(500);
-//
-//         var processTable = new Table
-//         {
-//             Border = TableBorder.MinimalHeavyHead
-//         };
-//         processTable
-//             .AddColumn("Location")
-//             .AddColumn("Occurrences")
-//             .AddColumn("Similarity score (0)")
-//             .AddEmptyRow();
-//
-//         AnsiConsole.Live(processTable)
-//             .Start(ctx =>
-//             {
-//                 foreach (var locationId in locationIds)
-//                 {
-//                     var occurrences = locationOccurrences.GetValueOrDefault(locationId, 0);
-//                     var similarityScore = occurrences * locationId;
-//                     similarityScores.Add(similarityScore);
-//
-//                     processTable.Rows.Update(0, 0, Markup.FromInterpolated($"[green]{locationId}[/]"));
-//                     processTable.Rows.Update(0, 1, Markup.FromInterpolated($"[yellow]{occurrences}[/]"));
-//                     processTable.Rows.Update(0, 2, Markup.FromInterpolated($"[green]{similarityScore}[/]"));
-//                     processTable.Columns[2].Header($"Similarity score ({similarityScores.Sum()})");
-//                     ctx.Refresh();
-//                     Thread.Sleep(10);
-//                 }
-//
-//                 Thread.Sleep(500);
-//             });
-//
-//         var result = similarityScores.Sum();
-//         AnsiConsole.MarkupLine($"Total similarity score:");
-//         PrintResult(result);
-//     }
-//
-//     private void PrintResult(long result)
-//     {
-//         var color = _expectedResult.HasValue ? "green" : "yellow";
-//         if (_expectedResult.HasValue && result != _expectedResult)
-//         {
-//             color = "red";
-//         }
-//
-//         AnsiConsole.MarkupLine($"[{color} bold]{result}[/]");
-//     }
-// }
+﻿using System.Text.RegularExpressions;
+using Spectre.Console;
+
+namespace Aoc.Day1;
+
+public partial class Part2 : IChallenge
+{
+    private string _input = "Aoc.Day1.input.txt";
+    private long? _expectedResult = 6819L;
+    private TimeSpan _delay = TimeSpan.Zero;
+
+    public void UseDevInput()
+    {
+        _input = "Aoc.Day1.input.dev.txt";
+        _expectedResult = 6L;
+    }
+
+    public void SetSpeed(int millisecondsDelay)
+    {
+        _delay = TimeSpan.FromMilliseconds(millisecondsDelay);
+    }
+
+    public void Run()
+    {
+        var locationTable = new Table
+        {
+            Border = TableBorder.MinimalHeavyHead,
+        };
+
+        locationTable
+            .AddColumn("Position")
+            .AddColumn("Dail Rotation")
+            .AddColumn("Target")
+            .AddColumn("#Rotations")
+            .AddColumn("#Passes")
+            .AddColumn("#Visits to 0");
+        var regex = DailRotationMatch();
+        var position = 50L;
+        var maxPosition = 99L;
+        var modulusCap = maxPosition + 1;
+
+        var matchCount = 0L;
+
+        AnsiConsole.Live(locationTable)
+            .Start(ctx =>
+            {
+                foreach (var line in InputReader.StreamLines(_input))
+                {
+                    if(locationTable.Rows.Count % 30 == 0)
+                    {
+                        locationTable.Rows.Clear();
+                    }
+
+                    var (dir, steps) = ParseLine(regex, line);
+                    var normalizedSteps = steps % modulusCap; // optimize steps within range
+                    var fullRotations = steps / modulusCap;
+
+                    var newPosition = dir switch
+                    {
+                        'L' => MoveLeft(position, normalizedSteps, modulusCap),
+                        'R' => MoveRight(position, normalizedSteps, modulusCap),
+                        _ => throw new InvalidOperationException($"Unknown direction: {dir}")
+                    };
+
+                    if (newPosition < 0)
+                    {
+                        throw new InvalidOperationException($"Position went below minimum: {position} -> {newPosition}");
+                    }
+
+                    var passesZero = dir switch
+                    {
+                        _ when newPosition == 0 => 0,
+                        _ when position == 0 => 0,
+                        'L' when (position - normalizedSteps) < 0 =>  1,
+                        'R' when (position + normalizedSteps) > maxPosition =>  1,
+                        _ => 0
+                    };
+
+                    var visitedZeroes = fullRotations + passesZero + (newPosition == 0 ? 1 : 0);
+
+                    locationTable.AddRow(
+                        position.ToString(),
+                        line,
+                        newPosition.ToString(),
+                        fullRotations.ToString(),
+                        passesZero.ToString(),
+                        visitedZeroes.ToString());
+
+                    position = newPosition;
+                    matchCount += visitedZeroes;
+
+                    ctx.Refresh();
+                    Thread.Sleep(_delay);
+                }
+            });
+
+        AnsiConsole.MarkupLine("Total matches: ");
+        PrintResult(matchCount);
+    }
+
+    private long MoveRight(long position, long steps, long modulus)
+    {
+        return (position + steps) % modulus;
+    }
+
+    private long MoveLeft(long position, long steps, long modulus)
+    {
+        return (position - steps + modulus) % modulus;
+    }
+
+    private (char dir, long steps) ParseLine(Regex regex, string line)
+    {
+        if (!regex.IsMatch(line))
+        {
+            throw new InvalidOperationException($"Could not parse line: {line}");
+        }
+
+        var match = regex.Match(line);
+        var dir = match.Groups["dir"].Value[0];
+        var steps = long.Parse(match.Groups["steps"].Value);
+        return (dir, steps);
+    }
+
+    private void PrintResult(long result)
+    {
+        var color = _expectedResult.HasValue ? "green" : "yellow";
+        if (_expectedResult.HasValue && result != _expectedResult)
+        {
+            color = "red";
+        }
+
+        AnsiConsole.MarkupLine($"[{color} bold]{result}[/]");
+    }
+
+    [GeneratedRegex(@"^(?'dir'L|R)(?'steps'\d+)$")]
+    private static partial Regex DailRotationMatch();
+}
