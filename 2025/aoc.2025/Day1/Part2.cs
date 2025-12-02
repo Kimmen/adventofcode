@@ -7,7 +7,8 @@ public partial class Part2 : IChallenge
 {
     private string _input = "Aoc.Day1.input.txt";
     private long? _expectedResult = 6819L;
-    private TimeSpan _delay = TimeSpan.Zero;
+    private long _refreshRate = 100;
+    private long _refreshCount = 0L;
 
     public void UseDevInput()
     {
@@ -15,9 +16,9 @@ public partial class Part2 : IChallenge
         _expectedResult = 6L;
     }
 
-    public void SetSpeed(int millisecondsDelay)
+    public void RefreshRate(long rate)
     {
-        _delay = TimeSpan.FromMilliseconds(millisecondsDelay);
+        _refreshRate = rate;
     }
 
     public void Run()
@@ -89,8 +90,10 @@ public partial class Part2 : IChallenge
                     position = newPosition;
                     matchCount += visitedZeroes;
 
-                    ctx.Refresh();
-                    Thread.Sleep(_delay);
+                    if (DoRefresh())
+                    {
+                        ctx.Refresh();    
+                    }
                 }
             });
 
@@ -131,6 +134,8 @@ public partial class Part2 : IChallenge
 
         AnsiConsole.MarkupLine($"[{color} bold]{result}[/]");
     }
+    
+    private bool DoRefresh() => _refreshCount++ % _refreshRate == 0;
 
     [GeneratedRegex(@"^(?'dir'L|R)(?'steps'\d+)$")]
     private static partial Regex DailRotationMatch();

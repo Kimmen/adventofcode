@@ -29,19 +29,20 @@ var speedInput = AnsiConsole.Prompt(
     new SelectionPrompt<string>()
         .Title("Which speed?")
         .Mode(SelectionMode.Leaf)
-        .AddChoices(["100%", "50%", "10%"] ));
+        .AddChoices(["Ultra instinct","Fast", "Medium", "Slow"] ));
 
 if(inputType == "Dev")
 {
     challenge.UseDevInput();
 }
 
-challenge.SetSpeed(speedInput switch
+challenge.RefreshRate(speedInput switch
 {
-    "100%" => 0,
-    "50%" => 500,
-    "10%" => 900,
-    _ => 0
+    "Ultra instinct" => long.MaxValue,
+    "Fast" => 200,
+    "Medium" => 50,
+    "Slow" => 2,
+    _ => 100
 });
 
 try

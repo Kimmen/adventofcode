@@ -3,10 +3,10 @@ using Spectre.Console;
 
 namespace Aoc.Day2;
 
-public partial class Part1 : IChallenge
+public partial class Part2 : IChallenge
 {
     private string _input = "Aoc.Day2.input.txt";
-    private long? _expectedResult = 21139440284L;
+    private long? _expectedResult = 38731915928L;
     private long _refreshRate = 100;
     private long _refreshCount = 0L;
     private static readonly Regex Extract = ExtractIdsRegex();
@@ -14,7 +14,7 @@ public partial class Part1 : IChallenge
     public void UseDevInput()
     {
         _input = "Aoc.Day2.input.dev.txt";
-        _expectedResult = 1227775554L;
+        _expectedResult = 4174379265L;
     }
 
     public void RefreshRate(long rate)
@@ -41,7 +41,7 @@ public partial class Part1 : IChallenge
                     
                     for (var x = first; x <= last; x++)
                     {
-                        if (IsDuplicate(x))
+                        if (IncludesRepeatingPattern(x))
                         {
                             sum += x;
                         }
@@ -51,6 +51,7 @@ public partial class Part1 : IChallenge
                         {
                             ctx.Refresh();    
                         }
+                        
                     }
                 }
             });
@@ -58,30 +59,36 @@ public partial class Part1 : IChallenge
         PrintResult(sum);
     }
 
-    public bool IsDuplicate(long id)
+    private static bool IncludesRepeatingPattern(long id)
     {
         var value = id.ToString();
-        
-        if(value.Length % 2 != 0)
-        {
-            return false;
-        }
-        
-        var i1 = 0;
-        var i2 =value.Length / 2;
+        var chunkSize = 1;
 
-        while (i2 < value.Length)
+        while (chunkSize <= value.Length)
         {
-            if (value[i1] != value[i2])
+            var chunk = value[..chunkSize];
+            var additionalChunkSizeSum = 0;
+
+            for (var i = value.IndexOf(chunk, chunkSize, StringComparison.Ordinal); i > -1; i = value.IndexOf(chunk, chunkSize + i, StringComparison.Ordinal))
+            {
+                additionalChunkSizeSum += chunkSize;
+            }
+            
+            //Only found one then there are no repeats
+            if (additionalChunkSizeSum == 0)
             {
                 return false;
             }
 
-            i1++;
-            i2++;
+            //Does all chunk sizes add upp to the total id size?
+            if (additionalChunkSizeSum + chunkSize == value.Length)
+            {
+                return true;
+            }
+            chunkSize++;
         }
 
-        return true;
+        return false;
     }
 
     private static (long first, long last) ExtractIds(string range)
@@ -103,7 +110,7 @@ public partial class Part1 : IChallenge
 
         AnsiConsole.MarkupLine($"[{color} bold]{result}[/]");
     }
-    
+
     private bool DoRefresh() => _refreshCount++ % _refreshRate == 0;
 
     [GeneratedRegex(@"^(?'first'\d+)-(?'end'\d+)$")]
