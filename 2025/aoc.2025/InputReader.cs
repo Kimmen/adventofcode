@@ -34,7 +34,7 @@ public static class InputReader
     {
         using var stream = typeof(InputReader).Assembly.GetManifestResourceStream(resourceName);
         using var reader = new StreamReader(stream!);
-
+        
         int c;
         while ((c = reader.Read()) != -1)
         {
