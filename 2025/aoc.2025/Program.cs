@@ -41,7 +41,7 @@ challenge.RefreshRate(speedInput switch
     "Ultra instinct" => long.MaxValue,
     "Fast" => 200,
     "Medium" => 50,
-    "Slow" => 2,
+    "Slow" => 1,
     _ => 100
 });
 
