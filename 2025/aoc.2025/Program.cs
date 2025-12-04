@@ -56,3 +56,4 @@ catch (Exception e)
 }
 
 AnsiConsole.MarkupLine("All done! [green]Have a great day![/]");
+Console.ReadKey();
