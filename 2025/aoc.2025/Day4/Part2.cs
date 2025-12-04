@@ -2,7 +2,7 @@
 
 namespace Aoc.Day4;
 
-public partial class Part1 : IChallenge
+public partial class Part2 : IChallenge
 {
     private string _input = "txt";
     private long? _expectedResult = 1457L;
@@ -12,7 +12,7 @@ public partial class Part1 : IChallenge
     public void UseDevInput()
     {
         _input = "dev.txt";
-        _expectedResult = 13L;
+        _expectedResult = 43L;
     }
 
     public void RefreshRate(long rate)
@@ -33,49 +33,76 @@ public partial class Part1 : IChallenge
         var lines = InputReader.ReadLinesFromResource(PuzzleInput).ToArray();
         var grid = BuildGrid(lines);
         var canvasSize = grid.GetLength(0);
-        var canvas = new Canvas(Math.Min(canvasSize, 100), Math.Min(canvasSize, 100));
+        var canvas = new Canvas(Math.Min(canvasSize, 50), Math.Min(canvasSize, 50))
+        {
+            Scale = false,
+            PixelWidth = 1
+        };
 
         AnsiConsole.Live(canvas).Start(ctx =>
         {
             var currentPosition = (X: 0, Y: 0);
+            long subSum;
             CanvasHelpers.RenderViewPort(canvas, grid, (-1, -1), currentPosition, ColorPicker, ctx);
 
-            for (var y = 0; y < grid.GetLength(0); y++)
+            do
             {
-                for (var x = 0; x < grid.GetLength(1); x++)
+                subSum = 0;
+                for (var y = 0; y < grid.GetLength(0); y++)
                 {
-                    currentPosition = (X: x, Y: y);
-                    try
+                    for (var x = 0; x < grid.GetLength(1); x++)
                     {
-                        var loc = grid[y, x];
-                        if (loc == '.')
+                        currentPosition = (X: x, Y: y);
+                        try
                         {
-                            continue;
-                        }
+                            var loc = grid[y, x];
+                            if (loc == '.')
+                            {
+                                continue;
+                            }
 
-                        var adjacentRolls = GetAdjacentRolls((x, y), grid);
-                        var isAccessible = adjacentRolls.Length < 4;
+                            var adjacentRolls = GetAdjacentRolls((x, y), grid);
+                            var isAccessible = adjacentRolls.Length < 4;
 
-                        if (isAccessible)
-                        {
-                            grid[y, x] = AccessibleRoll;
-                            sum++;
+                            if (isAccessible)
+                            {
+                                grid[y, x] = AccessibleRoll;
+                                subSum++;
+                            }
                         }
-                    }
-                    finally
-                    {
-                        if (DoRefresh())
+                        finally
                         {
-                            CanvasHelpers.RenderViewPort(canvas, grid, currentPosition, currentPosition, ColorPicker, ctx);
+                            if (DoRefresh())
+                            {
+                                CanvasHelpers.RenderViewPort(canvas, grid, currentPosition, currentPosition, ColorPicker, ctx);
+                            }
                         }
                     }
                 }
-            }
+
+                RemoveAccessibleRolls(grid);
+                sum += subSum;
+            } while(subSum > 0);
 
             CanvasHelpers.RenderViewPort(canvas, grid, currentPosition, currentPosition, ColorPicker, ctx);
         });
 
         PrintResult(sum);
+    }
+
+    private static void RemoveAccessibleRolls(char[,] grid)
+    {
+        for (var y = 0; y < grid.GetLength(0); y++)
+        {
+            for (var x = 0; x < grid.GetLength(1); x++)
+            {
+                var loc = grid[y, x];
+                if (loc == AccessibleRoll)
+                {
+                    grid[y, x] = Empty;
+                }
+            }
+        }
     }
 
     private (int x, int y)[] GetAdjacentRolls((int x, int y) pos, char[,] grid)
