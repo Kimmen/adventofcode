@@ -5,7 +5,7 @@ namespace Aoc.Day5;
 public partial class Part1 : IChallenge
 {
     private string _input = "txt";
-    private long? _expectedResult = 1457L;
+    private long? _expectedResult = 896L;
     private long _refreshRate = 100;
     private long _refreshCount = 0L;
 
