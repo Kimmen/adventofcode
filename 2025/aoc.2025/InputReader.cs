@@ -2,7 +2,7 @@
 
 public static class InputReader
 {
-    public static IEnumerable<string> ReadLinesFromResource(string resourceName)
+    public static IReadOnlyCollection<string> ReadLinesFromResource(string resourceName)
     {
         return ReadContentFromResource(resourceName).GetLines();
     }
@@ -15,7 +15,7 @@ public static class InputReader
         return reader.ReadToEnd();
     }
 
-    public static IEnumerable<string> GetLines(this string value)
+    public static IReadOnlyCollection<string> GetLines(this string value)
     {
         return value.Split(Environment.NewLine);
     }
